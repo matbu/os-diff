@@ -1,0 +1,8 @@
+---
+# service name and file location
+services:
+  keystone:
+    - /etc/keystone/keystone.conf
+    - /etc/keystone/logging.conf
+  glance:
+    - /etc/glance/glance.conf

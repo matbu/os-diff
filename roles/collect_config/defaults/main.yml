@@ -1,0 +1,3 @@
+---
+# Path where the config files should be pulled
+collect_dir: /tmp/collect_tripleo_configs

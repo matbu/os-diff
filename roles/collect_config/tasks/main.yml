@@ -1,0 +1,14 @@
+---
+# tasks file for collect_config
+- block:
+  - name: Get container id
+    register: results
+    command: podman ps | grep kolla | awk '/keystone/  {print $1}'
+
+  - name: Set fact for container id
+    set_fact:
+      container_id: "{{ results.out }}"
+
+  - name: Pull configuration files from podman container
+    command: podman cp {{ container_id }}:/etc/config/config.yml /tmp/config.yml
+    become: yes
