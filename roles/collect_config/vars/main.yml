@@ -2,7 +2,11 @@
 # service name and file location
 services:
   keystone:
-    - /etc/keystone/keystone.conf
-    - /etc/keystone/logging.conf
+    path: /etc/keystone
+    name:
+      - keystone.conf
+      - logging.conf
   glance:
-    - /etc/glance/glance.conf
+    path: /etc/glance
+    name:
+      - glance.conf

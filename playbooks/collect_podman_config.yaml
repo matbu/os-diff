@@ -1,0 +1,6 @@
+---
+- name: Collect Podman config
+  hosts: undercloud
+  gather_facts: yes
+  roles:
+    - collect_config
