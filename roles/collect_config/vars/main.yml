@@ -2,11 +2,13 @@
 # service name and file location
 services:
   keystone:
+    pod_name: keystone-api
     path: /etc/keystone
     name:
       - keystone.conf
       - logging.conf
   glance:
+    pod_name: keystone-api
     path: /etc/glance
     name:
       - glance.conf

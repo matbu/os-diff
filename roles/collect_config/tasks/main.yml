@@ -1,6 +1,14 @@
 ---
-- name: Collect
-  include_tasks: collect.yml
+- name: Collect podman
+  include_tasks: collect_podman.yml
   vars:
     service: "{{ item }}"
+  when: collect_podman
+  with_dict: "{{ services }}"
+
+- name: Collect ocp
+  include_tasks: collect_ocp.yml
+  vars:
+    service: "{{ item }}"
+  when: collect_ocp
   with_dict: "{{ services }}"

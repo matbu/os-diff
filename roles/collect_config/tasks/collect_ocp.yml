@@ -1,0 +1,32 @@
+---
+block:
+  - name: Get pods id
+    become: yes
+    register: results
+    shell: |
+      oc get pods | grep {{ service.value.pod_name }}
+
+  - name: Set fact for pod id
+    set_fact:
+      pod_id: "{{ results.stdout }}"
+
+  - name: Set fact for {{ service.key }} path
+    set_fact:
+      config_path: "{{ service.value.path }}"
+
+  - name: Create {{ service.key }} directory
+    become: true
+    file:
+      path: "{{ working_dir }}/ocp/{{ config_path }}"
+      state: directory
+      mode: "0755"
+      owner: "{{ ansible_user_id }}"
+      group: "{{ ansible_user_id }}"
+      recurse: true
+
+    - name: Pull configuration files from {{ service }} pod
+      register: config_results
+      shell: |
+        oc exec -it {{ pod_id }} -- cat {{ config_path }}/{{ item }} > {{ working_dir }}/ocp/{{ config_path }}/{{ item }}
+      become: yes
+      loop: "{{ service.value.name }}"

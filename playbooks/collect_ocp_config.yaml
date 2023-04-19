@@ -1,0 +1,8 @@
+---
+- name: Collect OCP config
+  hosts: ocp
+  gather_facts: yes
+  vars:
+    - collect_ocp: true
+  roles:
+    - collect_config

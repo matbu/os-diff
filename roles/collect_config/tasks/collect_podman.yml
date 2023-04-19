@@ -17,7 +17,7 @@
   - name: Create {{ service.key }} directory
     become: true
     file:
-      path: "/tmp/{{ config_path }}"
+      path: "{{ working_dir }}/podman/{{ config_path }}"
       state: directory
       mode: "0755"
       owner: "{{ ansible_user_id }}"
@@ -25,6 +25,6 @@
       recurse: true
 
   - name: Pull configuration files from podman container
-    command: podman cp {{ container_id }}:{{ config_path }}/{{ item }} /tmp/{{ config_path }}/{{ item }}
+    command: podman cp {{ container_id }}:{{ config_path }}/{{ item }} {{ working_dir }}/podman/{{ config_path }}/{{ item }}
     become: yes
     loop: "{{ service.value.name }}"

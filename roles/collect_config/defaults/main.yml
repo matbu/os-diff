@@ -1,3 +1,7 @@
 ---
 # Path where the config files should be pulled
 collect_dir: /tmp/collect_tripleo_configs
+working_dir: /tmp
+
+collect_podman: false
+collect_ocp: false

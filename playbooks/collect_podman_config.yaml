@@ -2,5 +2,7 @@
 - name: Collect Podman config
   hosts: undercloud
   gather_facts: yes
+  vars:
+    - collect_podman: true
   roles:
     - collect_config
