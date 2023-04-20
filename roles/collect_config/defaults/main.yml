@@ -5,3 +5,8 @@ working_dir: /tmp
 
 collect_podman: false
 collect_ocp: false
+
+# OCP auth config
+oc_host: https://api.crc.testing:6443
+oc_login: kubeadmin
+oc_passwd: 12345678

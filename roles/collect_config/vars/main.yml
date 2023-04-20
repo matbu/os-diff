@@ -2,13 +2,14 @@
 # service name and file location
 services:
   keystone:
-    pod_name: keystone-api
+    pod_name: keystone
     path: /etc/keystone
     name:
       - keystone.conf
       - logging.conf
   glance:
-    pod_name: keystone-api
+    pod_name: glance-api
     path: /etc/glance
     name:
-      - glance.conf
+      # @todo: pull all .conf files from a given directory
+      - glance-api.conf

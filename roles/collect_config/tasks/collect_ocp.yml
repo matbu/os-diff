@@ -1,10 +1,26 @@
 ---
-block:
+- block:
+  - name: Get oc binary path
+    register: oc_result
+    shell: |
+      which oc
+
+  - name: Set fact for oc binary
+    set_fact:
+      oc_bin: "{{ oc_result.stdout }}"
+
+  - name: Login to OC
+    shell: |
+      {{ oc_bin }} login -u {{ oc_login }} -p {{ oc_passwd }} {{ oc_host }}
+
+  - name: Test login
+    shell: |
+      {{ oc_bin }} whoami
+
   - name: Get pods id
-    become: yes
     register: results
     shell: |
-      oc get pods | grep {{ service.value.pod_name }}
+      {{ oc_bin }} get pods --field-selector status.phase=Running | awk '/{{ service.value.pod_name }}-[a-f0-9-]/ {print $1}'
 
   - name: Set fact for pod id
     set_fact:
@@ -27,6 +43,6 @@ block:
   - name: Pull configuration files from {{ service }} pod
     register: config_results
     shell: |
-      oc exec -it {{ pod_id }} -- cat {{ config_path }}/{{ item }} > {{ working_dir }}/ocp/{{ config_path }}/{{ item }}
+      {{ oc_bin }} exec -it {{ pod_id }} -- cat {{ config_path }}/{{ item }} > {{ working_dir }}/ocp/{{ config_path }}/{{ item }}
     become: yes
     loop: "{{ service.value.name }}"

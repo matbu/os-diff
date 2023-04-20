@@ -1,0 +1,9 @@
+ocp:
+  hosts:
+    localhost:
+      ansible_connection: local
+
+undercloud:
+  hosts:
+    localhost:
+      ansible_connection: local
