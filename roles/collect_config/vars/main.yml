@@ -2,8 +2,7 @@
 # service name and file location
 services:
   keystone:
-    ocp:
-      pod_name: keystone
+    pod_name: keystone
     path: /etc/keystone
     name:
       - keystone.conf
