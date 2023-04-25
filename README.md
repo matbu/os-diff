@@ -31,11 +31,11 @@ It call one Ansible role:
         main.yml
 ```
 
-A client provided with the Go binary will be available soon.
+A complete CLI provided with the Go binary will be available soon.
 For now you can execute those playbooks with this command:
 
 ```
-go run examples/pull_ocp_configuration.go
+os-diff pull --cloud_type=ocp --inventory=$PWD/hosts
 
 ```
 
@@ -43,6 +43,6 @@ And execute the comparision of your configuration files with (edit the go files
 to provide a valid path for your datas):
 
 ```
-go run examples/compare_files.go
+os-diff compare --origin=tests/podman/keystone.conf --destination=tests/ocp/keystone.conf --output=output.txt
 
 ```

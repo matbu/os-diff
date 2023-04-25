@@ -27,16 +27,12 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "os-diff",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Short: "Tool for pulling and inspecting config files for Openstack services",
+	Long: `Pull and compare Openstack services configuration files from pods
+				 or podman containers. For example:
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+				 You can pull configuration from a Keystone container and compare
+				 to a new Keystone pod which has been migrated.`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

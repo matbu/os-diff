@@ -19,21 +19,54 @@ package cmd
 import (
 	"fmt"
 
-	//"os-diff/pkg/ansible"
+	"os-diff/pkg/ansible"
 	"github.com/spf13/cobra"
 )
+
+var inventory string
+var cloud_engine string
+var output_dir string
+var play string
 
 var pullCmd = &cobra.Command{
 	Use:   "pull",
 	Short: "Pull configurations from Podman or OCP",
 	Long: `This command pulls configuration files by services from Podman
 	environment or OCP. For example:
-  os-diff pull -podman -inventory $PWD/hosts -output-dir /tmp`,
+  os-diff pull --cloud_type=ocp --inventory=$PWD/hosts --output-dir=/tmp`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("pull called")
+
+					ansiblePlaybookConnectionOptions := &ansible.AnsiblePlaybookConnectionOptions{
+						Connection: "local",
+					}
+
+					ansiblePlaybookOptions := &ansible.AnsiblePlaybookOptions{
+						Inventory: inventory,
+					}
+
+					if cloud_engine == "ocp" {
+						play = "playbooks/collect_ocp_config.yaml"
+					} else {
+						play = "playbooks/collect_podman_config.yaml"
+					}
+
+					playbook := &ansible.AnsiblePlaybookCmd{
+						Playbook:          play,
+						ConnectionOptions: ansiblePlaybookConnectionOptions,
+						Options:           ansiblePlaybookOptions,
+					}
+
+					err := playbook.Run()
+					if err != nil {
+						panic(err)
+					}
+					fmt.Println("pull called")
 	},
 }
 
 func init() {
+	pullCmd.Flags().StringVar(&inventory, "inventory", "hosts", "Ansible inventory hosts file.")
+	pullCmd.Flags().StringVar(&cloud_engine, "cloud_engine", "ocp", "Service engine, could be: ocp or podman.")
+	pullCmd.Flags().StringVar(&output_dir, "output_dir", "/tmp", "Output directory for the configuration files")
 	rootCmd.AddCommand(pullCmd)
 }
