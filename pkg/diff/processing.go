@@ -14,32 +14,7 @@
  * Copyright 2023 Red Hat, Inc.
  *
  */
-package main
+package diff
 
-import (
-	"fmt"
-	"os-diff/pkg/ansible"
-)
 
-func main() {
-	ansiblePlaybookConnectionOptions := &ansible.AnsiblePlaybookConnectionOptions{
-		Connection: "local",
-	}
-
-	ansiblePlaybookOptions := &ansible.AnsiblePlaybookOptions{
-		Inventory: "hosts",
-	}
-
-	playbook := &ansible.AnsiblePlaybookCmd{
-		Playbook:          "playbooks/collect_ocp_config.yaml",
-		ConnectionOptions: ansiblePlaybookConnectionOptions,
-		Options:           ansiblePlaybookOptions,
-	}
-
-	err := playbook.Run()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("ansible called")
-}
+// @todo : checksum before doing anything

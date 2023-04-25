@@ -43,6 +43,4 @@
   - name: Pull configuration files from {{ service }} pod
     register: config_results
     shell: |
-      {{ oc_bin }} exec -it {{ pod_id }} -- cat {{ config_path }}/{{ item }} > {{ working_dir }}/ocp/{{ config_path }}/{{ item }}
-    become: yes
-    loop: "{{ service.value.name }}"
+      {{ oc_bin }} cp {{ pod_id }}:{{ config_path }}/ {{ working_dir }}/ocp/{{ config_path }}/
