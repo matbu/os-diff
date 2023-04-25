@@ -35,7 +35,7 @@ A complete CLI provided with the Go binary will be available soon.
 For now you can execute those playbooks with this command:
 
 ```
-os-diff pull --cloud_type=ocp --inventory=$PWD/hosts
+os-diff pull --cloud_engine=ocp --inventory=$PWD/hosts
 
 ```
 

@@ -33,7 +33,7 @@ var pullCmd = &cobra.Command{
 	Short: "Pull configurations from Podman or OCP",
 	Long: `This command pulls configuration files by services from Podman
 	environment or OCP. For example:
-  os-diff pull --cloud_type=ocp --inventory=$PWD/hosts --output-dir=/tmp`,
+  os-diff pull --cloud_engine=ocp --inventory=$PWD/hosts --output-dir=/tmp`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 					ansiblePlaybookConnectionOptions := &ansible.AnsiblePlaybookConnectionOptions{
