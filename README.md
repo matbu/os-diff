@@ -46,3 +46,9 @@ to provide a valid path for your datas):
 os-diff compare --origin=tests/podman/keystone.conf --destination=tests/ocp/keystone.conf --output=output.txt
 
 ```
+
+### TODO
+
+* Add option to compare the config files directly from files to pods
+* Compare directories
+* Handle other config type: yaml, json.

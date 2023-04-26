@@ -50,6 +50,9 @@ func writeReport(content []string, report_path string) error {
 }
 
 func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) []string {
+  // Console colors
+  colorRed := "\033[31m"
+  colorReset := "\033[0m"
   // Check for differences
   reportLines := []string{}
   reportLines = append(reportLines, fmt.Sprintf("Compare configuration file: %s with configuration file: %s\n", f.Origin, f.Destination))
@@ -65,14 +68,16 @@ func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) []string {
           // key found in both, check if value is different
           if config1[0] == config2[0] {
             if config1[1] != config2[1] {
-            reportLines = append(reportLines, fmt.Sprintf("Line %d: %s, different with %s\n", j+1, line1, line2))
+              fmt.Println("*** Difference detected:", string(colorRed), line1, line2, string(colorReset))
+              reportLines = append(reportLines, fmt.Sprintf("Line %d: %s, different with %s\n", j+1, line1, line2))
             }
           found = true
           }
         }
       }
       if !found {
-      reportLines = append(reportLines, fmt.Sprintf("Line %d: %s, Not found \n", i+1, line1))
+        fmt.Println("--- Line not found:", string(colorRed), line1, string(colorReset))
+        reportLines = append(reportLines, fmt.Sprintf("Line %d: %s, Not found \n", i+1, line1))
       }
     }
   }
