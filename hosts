@@ -7,3 +7,8 @@ undercloud:
   hosts:
     localhost:
       ansible_connection: local
+
+standalone:
+  hosts:
+    172.16.0.74:
+      ansible_connection: local
