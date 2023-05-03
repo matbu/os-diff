@@ -1,0 +1,41 @@
+---
+# @todo:
+# You need a $IMG of CentOS or Rhel 9 in the user $HOME
+# An ssh key in .ssh/
+- name: Push ssh key inside the image
+  shell: |
+    virt-sysprep -a {{ image_path }}/{{ cloud_image_name }} \
+    --ssh-inject root:file:{{ ssh_key_path }} --selinux-relabel
+
+- name: Push file
+  copy:
+    src: {{ item }}
+    dst: {{ user_home }}
+  loop: {{ libvirt_files }}
+
+- name: Create management network
+  become: true
+  shell: |
+    virsh net-define /home/stack/management.xml
+    virsh net-autostart management
+    virsh net-start management
+
+- name: Create external network
+  become: true
+  shell: |
+    virsh net-define /home/stack/external.xml
+    virsh net-autostart external
+    virsh net-start external
+
+- name: Create standalone network
+  become: true
+  shell: |
+    virsh net-define /home/stack/standalone-net.xml
+    virsh net-autostart standalone
+    virsh net-start standalone
+
+- name: Create Standalone Vms
+  become: true
+  shell: |
+    virsh define /home/stack/standalone.xml
+    virsh start standalone
