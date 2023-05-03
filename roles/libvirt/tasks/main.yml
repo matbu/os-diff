@@ -6,6 +6,11 @@
   shell: |
     curl {{ image_url }} --output {{ image_path }}/{{ cloud_image_name }}
 
+- name: ssh keygen
+  ignore_errors: true
+  shell: |
+    ssh-keygen -f /home/stack/.ssh/id_rsa -q -N ""
+
 - name: Push ssh key inside the image
   shell: |
     virt-sysprep -a {{ image_path }}/{{ cloud_image_name }} \
@@ -14,7 +19,7 @@
 - name: Push file
   copy:
     src: "{{ item }}"
-    dst: "{{ user_home }}"
+    dest: "{{ user_home }}"
   loop: "{{ libvirt_files }}"
 
 - name: Create management network
