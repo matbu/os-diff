@@ -10,4 +10,3 @@ libvirt_files:
   - external.xml
   - management.xml
   - standalone-net.xml
-  - standalone.xml
