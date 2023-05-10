@@ -20,7 +20,7 @@
   shell: |
     cp /var/lib/libvirt/images/{{ cloud_image_name }} /var/lib/libvirt/images/standalone-0-disk1.qcow2
     qemu-img create -b /var/lib/libvirt/images/{{ cloud_image_name }} -F qcow2 \
-    -f qcow2 /var/lib/libvirt/images/standalone-0-disk1.qcow2 60G
+    -f qcow2 /var/lib/libvirt/images/standalone-0-disk1.qcow2 40G
 
 - name: Push file
   copy:

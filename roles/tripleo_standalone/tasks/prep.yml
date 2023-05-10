@@ -10,7 +10,17 @@
   shell: |
     curl https://trunk.rdoproject.org/centos9-zed/current/delorean.repo --output /etc/yum.repos.d/delorean.repo
     curl https://trunk.rdoproject.org/centos9-zed/delorean-deps.repo --output /etc/yum.repos.d/delorean-deps.repo
+
+- name: Enable crb if needed
+  ignore_errors: true
+  become: true
+  shell: |
     yum-config-manager --enable  crb
+
+- name: Disable ssl verify is needed
+  become: true
+  shell: |
+    sed -i '$a\sslverify\=false' /etc/yum.conf
 
 - name: Install tripleoclient
   become: true

@@ -28,16 +28,6 @@ type CompareFileNames struct {
   Destination  string
 }
 
-// @todo : detect config type: json / ini / yaml
-func stringInSlice(a string, list []string) bool {
-    for _, b := range list {
-        if b == a {
-            return true
-        }
-    }
-    return false
-}
-
 func writeReport(content []string, report_path string) error {
   var err error
   // Write the report to file
@@ -49,6 +39,7 @@ func writeReport(content []string, report_path string) error {
   return nil
 }
 
+// @todo : detect config type: json / ini / yaml
 func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) []string {
   // Console colors
   colorRed := "\033[31m"
@@ -84,16 +75,16 @@ func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) []string {
   return reportLines
 }
 
-func (f *CompareFileNames) CompareIniFiles(report_path string) error {
+func (f *CompareFileNames) CompareIniFiles() ([]string, error) {
 
   // Read the files
   orgContent, err := ioutil.ReadFile(f.Origin)
   if err != nil {
-    return errors.New("Failed to open file: '" + f.Origin + "'. " + err.Error())
+    return nil, errors.New("Failed to open file: '" + f.Origin + "'. " + err.Error())
   }
   destContent, err := ioutil.ReadFile(f.Destination)
   if err != nil {
-    return errors.New("Failed to open file: '" + f.Destination + "'. " + err.Error())
+    return nil, errors.New("Failed to open file: '" + f.Destination + "'. " + err.Error())
   }
   // Split both files into lines
   orgLines := strings.Split(string(orgContent), "\n")
@@ -103,7 +94,8 @@ func (f *CompareFileNames) CompareIniFiles(report_path string) error {
   reports := f.makeDiff(orgLines, destLines)
   //dest_org_comparison := f.makeDiff(destLines, orgLines)
   reports = append(reports, f.makeDiff(destLines, orgLines)...)
-  writeReport(reports, report_path)
+  file_path := "/tmp/" + f.Origin + ".diff"
+  writeReport(reports, file_path)
 
-	return nil
+	return reports, nil
 }
