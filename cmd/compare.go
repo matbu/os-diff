@@ -34,15 +34,14 @@ var compareCmd = &cobra.Command{
 	Long: `Compare files or directories from two different paths. For example:
 os-diff compare --origin=tests/podman/keystone.conf --destination=tests/ocp/keystone.conf --output=output.txt`,
 	Run: func(cmd *cobra.Command, args []string) {
-		compareFiles := &diff.CompareFileNames{
+		report := &diff.DiffReport{
 			Origin: origin,
-			Destination: destination,
+	    Destination: destination,
 		}
-		err := compareFiles.CompareIniFiles(output)
-		if err != nil {
+	  err := report.ProcessDirectories()
+	  if err != nil {
 			panic(err)
 		}
-
 		fmt.Println("Compare called")
 	},
 }
