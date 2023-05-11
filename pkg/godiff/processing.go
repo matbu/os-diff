@@ -34,15 +34,6 @@ type GoDiffDataStruct struct {
   unmatchFile     []string
 }
 
-func stringInSlice(a string, list []string) bool {
-    for _, b := range list {
-        if b == a {
-            return true
-        }
-    }
-    return false
-}
-
 func checkFile(path1 string, path2 string) (bool, error) {
     /*
     return:

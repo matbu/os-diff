@@ -19,23 +19,29 @@ package godiff
 import (
   "errors"
 	"fmt"
+  "os"
 	"io/ioutil"
 	"strings"
   "github.com/go-ini/ini"
+  "path/filepath"
 )
 
 type CompareFileNames struct {
 	Origin       string
   Destination  string
+  reportLines  []string
 }
 
-func writeReport(content []string, report_path string) error {
-  var err error
-  // Write the report to file
+func writeReport(content []string, reportPath string) error {
+
+  path, _ := filepath.Split(reportPath)
+  if _, err := os.Stat(path); os.IsNotExist(err) {
+    os.MkdirAll(path, 0700)
+  }
   reportContent := strings.Join(content, "")
-  err = ioutil.WriteFile(report_path, []byte(reportContent), 0644)
+  err := ioutil.WriteFile(reportPath, []byte(reportContent), 0644)
   if err != nil {
-    return errors.New("Failed to write report file: '" + report_path + "'. " + err.Error())
+    return errors.New("Failed to write report file: '" + reportPath + "'. " + err.Error())
   }
   return nil
 }
@@ -76,7 +82,7 @@ func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) []string {
   return reportLines
 }
 
-func CompareIniFiles(origin string, dest string) []string {
+func (f *CompareFileNames) CompareIniFiles(origin string, dest string) []string {
     // Load the first INI file
     cfg1, err := ini.Load(origin)
     if err != nil {
@@ -92,35 +98,39 @@ func CompareIniFiles(origin string, dest string) []string {
     colorRed := "\033[31m"
     colorReset := "\033[0m"
     // Check for differences
-    reportLines := []string{}
-    reportLines = append(reportLines, fmt.Sprintf("Compare configuration file: %s with configuration file: %s\n", origin, dest))
+    f.reportLines = append(f.reportLines, fmt.Sprintf("Compare configuration file: %s with configuration file: %s\n", origin, dest))
 
     for _, sec1 := range cfg1.Sections() {
         sec2, err := cfg2.GetSection(sec1.Name())
         if err != nil {
-            //return fmt.Errorf("Section %s not found in %s", sec1.Name(), file2)
-            fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " not found in:", dest, string(colorReset))
-            reportLines = append(reportLines, fmt.Sprintf("Section %s not found in %s", sec1.Name(), dest))
+            msg := fmt.Sprintf("Section %s not found in %s \n", sec1.Name(), dest)
+            if !stringInSlice(msg, f.reportLines){
+                fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " not found in:", dest, string(colorReset))
+                f.reportLines = append(f.reportLines, msg)
+            }
         }
 
         for _, key1 := range sec1.Keys() {
             key2, err := sec2.GetKey(key1.Name())
             if err != nil {
-                //return fmt.Errorf("Key %s not found in section %s of %s", key1.Name(), sec1.Name(), file2)
-                fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " Key ", key1.Name(), " not found in:", dest, string(colorReset))
-                reportLines = append(reportLines, fmt.Sprintf("Key %s not found in section %s of %s", key1.Name(), sec1.Name(), dest))
+                msg := fmt.Sprintf("Key %s not found in section %s of %s \n", key1.Name(), sec1.Name(), dest)
+                if !stringInSlice(msg, f.reportLines){
+                    fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " Key ", key1.Name(), " not found in:", dest, string(colorReset))
+                    f.reportLines = append(f.reportLines, msg)
+                }
             } else {
                 if key1.Value() != key2.Value() {
-                    //return fmt.Errorf("Value of key %s in section %s is different between %s and %s", key1.Name(), sec1.Name(), file1, file2)
-                    fmt.Println(string(colorRed), "*** Difference detected: Values are not equal: ", key1.Value() ," and ", key2.Value(),"Section: ", sec1.Name(), " Key ", key1.Name(), dest, string(colorReset))
-                    reportLines = append(reportLines, fmt.Sprintf("Value of key %s in section %s is different between %s and %s", key1.Name(), sec1.Name(), origin, dest))
-
+                    msg := fmt.Sprintf("Value of key %s in section %s is different between %s and %s \n", key1.Name(), sec1.Name(), origin, dest)
+                    if !stringInSlice(msg, f.reportLines){
+                        fmt.Println(string(colorRed), "*** Difference detected: Values are not equal: ", key1.Value() ," and ", key2.Value(),"Section: ", sec1.Name(), " Key ", key1.Name(), dest, string(colorReset))
+                        f.reportLines = append(f.reportLines, msg)
+                    }
                 }
             }
         }
     }
 
-    return reportLines
+    return f.reportLines
 }
 
 
@@ -138,7 +148,8 @@ func (f *CompareFileNames) CompareFiles() ([]string, error) {
   // Detect type
   reports := []string{}
   if isIni(f.Origin) {
-    reports = CompareIniFiles(f.Origin, f.Destination)
+    reports = f.CompareIniFiles(f.Origin, f.Destination)
+    reports = append(reports, f.CompareIniFiles(f.Origin, f.Destination)...)
   } else {
     // Split both files into lines
     orgLines := strings.Split(string(orgContent), "\n")
@@ -149,8 +160,10 @@ func (f *CompareFileNames) CompareFiles() ([]string, error) {
     reports = append(reports, f.makeDiff(destLines, orgLines)...)
 
   }
-  file_path := "/tmp/" + f.Origin + ".diff"
-  writeReport(reports, file_path)
-
+  filePath := "/tmp/" + f.Origin + ".diff"
+  err = writeReport(reports, filePath)
+  if err != nil {
+      fmt.Println(err)
+  }
 	return reports, nil
 }

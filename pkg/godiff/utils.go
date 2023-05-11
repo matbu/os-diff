@@ -23,6 +23,15 @@ import (
 	  "encoding/json"
 )
 
+func stringInSlice(a string, list []string) bool {
+    for _, b := range list {
+        if b == a {
+            return true
+        }
+    }
+    return false
+}
+
 func isIni(filePath string) bool {
     // @todo pass directly file content to avoid read duplication
     data, err := ioutil.ReadFile(filePath)
