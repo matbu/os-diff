@@ -6,9 +6,9 @@ ocp:
 undercloud:
   hosts:
     localhost:
-      ansible_connection: local
+      ansible_connection: ssh
 
 standalone:
   hosts:
     172.16.0.74:
-      ansible_connection: local
+      ansible_connection: ssh

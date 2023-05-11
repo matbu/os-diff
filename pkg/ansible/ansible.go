@@ -22,11 +22,12 @@ import (
 )
 
 const (
-  AnsiblePlaybookBin    = "ansible-playbook"
-	ConnectionFlag        = "--connection"
-	ExtraVarsFlag         = "--extra-vars"
-	InventoryFlag         = "--inventory"
-	LimitFlag             = "--limit"
+	AnsiblePlaybookBin   = "ansible-playbook"
+	ConnectionFlag       = "--connection"
+	ExtraVarsFlag        = "--extra-vars"
+	InventoryFlag        = "--inventory"
+	LimitFlag            = "--limit"
+	VerbosityFlag        = "-vvvv"
 	AnsibleForceColorEnv = "ANSIBLE_FORCE_COLOR"
 )
 
@@ -43,9 +44,10 @@ type AnsiblePlaybookCmd struct {
 }
 
 type AnsiblePlaybookOptions struct {
-	ExtraVars  map[string]interface{}
-	Inventory  string
-	Limit      string
+	ExtraVars map[string]interface{}
+	Inventory string
+	Limit     string
+	Verbosity bool
 }
 
 type AnsiblePlaybookConnectionOptions struct {
@@ -79,7 +81,6 @@ func (p *AnsiblePlaybookCmd) Run() error {
 
 	return p.Exec.Execute(cmd[0], cmd[1:], p.ExecPrefix)
 }
-
 
 func (p *AnsiblePlaybookCmd) Command() ([]string, error) {
 	cmd := []string{}
@@ -115,6 +116,10 @@ func (o *AnsiblePlaybookOptions) GenerateCommandOptions() ([]string, error) {
 
 	if o == nil {
 		return nil, errors.New("(ansible::GenerateCommandOptions) AnsiblePlaybookOptions is nil")
+	}
+
+	if o.Verbosity {
+		cmd = append(cmd, VerbosityFlag)
 	}
 
 	if o.Inventory != "" {

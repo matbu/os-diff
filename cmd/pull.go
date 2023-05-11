@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"os-diff/pkg/ansible"
+
 	"github.com/spf13/cobra"
 )
 
@@ -27,6 +28,7 @@ var inventory string
 var cloud_engine string
 var output_dir string
 var play string
+var verbose bool
 
 var pullCmd = &cobra.Command{
 	Use:   "pull",
@@ -36,37 +38,39 @@ var pullCmd = &cobra.Command{
   os-diff pull --cloud_engine=ocp --inventory=$PWD/hosts --output-dir=/tmp`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-					ansiblePlaybookConnectionOptions := &ansible.AnsiblePlaybookConnectionOptions{
-						Connection: "local",
-					}
+		ansiblePlaybookConnectionOptions := &ansible.AnsiblePlaybookConnectionOptions{
+			Connection: "local",
+		}
 
-					ansiblePlaybookOptions := &ansible.AnsiblePlaybookOptions{
-						Inventory: inventory,
-					}
+		ansiblePlaybookOptions := &ansible.AnsiblePlaybookOptions{
+			Inventory: inventory,
+			Verbosity: verbose,
+		}
 
-					if cloud_engine == "ocp" {
-						play = "playbooks/collect_ocp_config.yaml"
-					} else {
-						play = "playbooks/collect_podman_config.yaml"
-					}
+		if cloud_engine == "ocp" {
+			play = "playbooks/collect_ocp_config.yaml"
+		} else {
+			play = "playbooks/collect_podman_config.yaml"
+		}
 
-					playbook := &ansible.AnsiblePlaybookCmd{
-						Playbook:          play,
-						ConnectionOptions: ansiblePlaybookConnectionOptions,
-						Options:           ansiblePlaybookOptions,
-					}
+		playbook := &ansible.AnsiblePlaybookCmd{
+			Playbook:          play,
+			ConnectionOptions: ansiblePlaybookConnectionOptions,
+			Options:           ansiblePlaybookOptions,
+		}
 
-					err := playbook.Run()
-					if err != nil {
-						panic(err)
-					}
-					fmt.Println("pull called")
+		err := playbook.Run()
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("pull called")
 	},
 }
 
 func init() {
 	pullCmd.Flags().StringVar(&inventory, "inventory", "hosts", "Ansible inventory hosts file.")
 	pullCmd.Flags().StringVar(&cloud_engine, "cloud_engine", "ocp", "Service engine, could be: ocp or podman.")
-	pullCmd.Flags().StringVar(&output_dir, "output_dir", "/tmp", "Output directory for the configuration files")
+	pullCmd.Flags().StringVar(&output_dir, "output_dir", "/tmp", "Output directory for the configuration files.")
+	pullCmd.Flags().BoolVar(&verbose, "verbose", false, "Enable Ansible verbosity.")
 	rootCmd.AddCommand(pullCmd)
 }
