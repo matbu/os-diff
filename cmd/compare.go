@@ -19,7 +19,7 @@ package cmd
 import (
 	"fmt"
 
-	"os-diff/pkg/diff"
+	"os-diff/pkg/godiff"
 	"github.com/spf13/cobra"
 )
 
@@ -34,11 +34,11 @@ var compareCmd = &cobra.Command{
 	Long: `Compare files or directories from two different paths. For example:
 os-diff compare --origin=tests/podman/keystone.conf --destination=tests/ocp/keystone.conf --output=output.txt`,
 	Run: func(cmd *cobra.Command, args []string) {
-		report := &diff.DiffReport{
+		goDiff := &godiff.GoDiffDataStruct{
 			Origin: origin,
 	    Destination: destination,
 		}
-	  err := report.ProcessDirectories()
+	  err := goDiff.ProcessDirectories()
 	  if err != nil {
 			panic(err)
 		}

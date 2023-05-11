@@ -14,7 +14,7 @@
  * Copyright 2023 Red Hat, Inc.
  *
  */
-package diff
+package godiff
 
 import (
     "fmt"
@@ -23,7 +23,7 @@ import (
 )
 
 // @todo : checksum before doing anything
-type DiffReport struct {
+type GoDiffDataStruct struct {
   Origin          string
   Destination     string
   missingInOrg    []string
@@ -100,7 +100,7 @@ func checkFile(path1 string, path2 string) (bool, error) {
     return true, nil
 }
 
-func (p *DiffReport) Process(dir1 string, dir2 string) error {
+func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
   // Walk through the first directory and compare each file to the second directory
   // Start to process
   fmt.Println("Start processing: ", dir1,"and: ", dir2, "\n")
@@ -144,7 +144,7 @@ func (p *DiffReport) Process(dir1 string, dir2 string) error {
                     		Origin: path,
                         Destination: path2,
                     	}
-                      report, err := compareFiles.CompareIniFiles()
+                      report, err := compareFiles.CompareFiles()
                       if err != nil {
                     		return err
                     	}
@@ -169,8 +169,7 @@ func (p *DiffReport) Process(dir1 string, dir2 string) error {
   return nil
 }
 
-func (p *DiffReport) ProcessDirectories() error {
-
+func (p *GoDiffDataStruct) ProcessDirectories() error {
   // Compare origin vs destination
   p.Process(p.Origin, p.Destination)
   // Compare destination vs origin

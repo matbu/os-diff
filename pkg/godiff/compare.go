@@ -14,13 +14,14 @@
  * Copyright 2023 Red Hat, Inc.
  *
  */
-package diff
+package godiff
 
 import (
   "errors"
 	"fmt"
 	"io/ioutil"
 	"strings"
+  "github.com/go-ini/ini"
 )
 
 type CompareFileNames struct {
@@ -75,8 +76,56 @@ func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) []string {
   return reportLines
 }
 
-func (f *CompareFileNames) CompareIniFiles() ([]string, error) {
+func CompareIniFiles(origin string, dest string) []string {
+    // Load the first INI file
+    cfg1, err := ini.Load(origin)
+    if err != nil {
+      fmt.Errorf("Erro while loading file %s: %s", origin, err)
+    }
+    cfg2, err := ini.Load(dest)
+    if err != nil {
+        fmt.Errorf("Erro while loading file %s: %s", dest, err)
+    }
 
+    // Compare the sections and keys in each file
+    // Console colors
+    colorRed := "\033[31m"
+    colorReset := "\033[0m"
+    // Check for differences
+    reportLines := []string{}
+    reportLines = append(reportLines, fmt.Sprintf("Compare configuration file: %s with configuration file: %s\n", origin, dest))
+
+    for _, sec1 := range cfg1.Sections() {
+        sec2, err := cfg2.GetSection(sec1.Name())
+        if err != nil {
+            //return fmt.Errorf("Section %s not found in %s", sec1.Name(), file2)
+            fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " not found in:", dest, string(colorReset))
+            reportLines = append(reportLines, fmt.Sprintf("Section %s not found in %s", sec1.Name(), dest))
+        }
+
+        for _, key1 := range sec1.Keys() {
+            key2, err := sec2.GetKey(key1.Name())
+            if err != nil {
+                //return fmt.Errorf("Key %s not found in section %s of %s", key1.Name(), sec1.Name(), file2)
+                fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " Key ", key1.Name(), " not found in:", dest, string(colorReset))
+                reportLines = append(reportLines, fmt.Sprintf("Key %s not found in section %s of %s", key1.Name(), sec1.Name(), dest))
+            } else {
+                if key1.Value() != key2.Value() {
+                    //return fmt.Errorf("Value of key %s in section %s is different between %s and %s", key1.Name(), sec1.Name(), file1, file2)
+                    fmt.Println(string(colorRed), "*** Difference detected: Values are not equal: ", key1.Value() ," and ", key2.Value(),"Section: ", sec1.Name(), " Key ", key1.Name(), dest, string(colorReset))
+                    reportLines = append(reportLines, fmt.Sprintf("Value of key %s in section %s is different between %s and %s", key1.Name(), sec1.Name(), origin, dest))
+
+                }
+            }
+        }
+    }
+
+    return reportLines
+}
+
+
+func (f *CompareFileNames) CompareFiles() ([]string, error) {
+  // Compare two files
   // Read the files
   orgContent, err := ioutil.ReadFile(f.Origin)
   if err != nil {
@@ -86,14 +135,20 @@ func (f *CompareFileNames) CompareIniFiles() ([]string, error) {
   if err != nil {
     return nil, errors.New("Failed to open file: '" + f.Destination + "'. " + err.Error())
   }
-  // Split both files into lines
-  orgLines := strings.Split(string(orgContent), "\n")
-  destLines := strings.Split(string(destContent), "\n")
+  // Detect type
+  reports := []string{}
+  if isIni(f.Origin) {
+    reports = CompareIniFiles(f.Origin, f.Destination)
+  } else {
+    // Split both files into lines
+    orgLines := strings.Split(string(orgContent), "\n")
+    destLines := strings.Split(string(destContent), "\n")
+    // Check for differences
+    reports = f.makeDiff(orgLines, destLines)
+    //dest_org_comparison := f.makeDiff(destLines, orgLines)
+    reports = append(reports, f.makeDiff(destLines, orgLines)...)
 
-  // Check for differences
-  reports := f.makeDiff(orgLines, destLines)
-  //dest_org_comparison := f.makeDiff(destLines, orgLines)
-  reports = append(reports, f.makeDiff(destLines, orgLines)...)
+  }
   file_path := "/tmp/" + f.Origin + ".diff"
   writeReport(reports, file_path)
 
