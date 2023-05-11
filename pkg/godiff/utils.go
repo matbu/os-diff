@@ -17,55 +17,56 @@
 package godiff
 
 import (
-    "fmt"
-    "io/ioutil"
-    "github.com/go-yaml/yaml"
-	  "encoding/json"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+
+	"github.com/go-yaml/yaml"
 )
 
 func stringInSlice(a string, list []string) bool {
-    for _, b := range list {
-        if b == a {
-            return true
-        }
-    }
-    return false
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
 
 func isIni(filePath string) bool {
-    // @todo pass directly file content to avoid read duplication
-    data, err := ioutil.ReadFile(filePath)
-    if err != nil {
-        fmt.Errorf("Error reading file:", err)
-    }
-    if data[0] == '[' {
-        return true
-    }
-    return false
+	// @todo pass directly file content to avoid read duplication
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		fmt.Errorf("Error reading file:", err)
+	}
+	if data[0] == '[' {
+		return true
+	}
+	return false
 }
 
 func isYaml(filePath string) bool {
-    data, err := ioutil.ReadFile(filePath)
-    if err != nil {
-        fmt.Errorf("Error reading file:", err)
-    }
-    var yamlData interface{}
-    err = yaml.Unmarshal(data, &yamlData)
-    if err == nil {
-        return true
-    }
-    return false
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		fmt.Errorf("Error reading file:", err)
+	}
+	var yamlData interface{}
+	err = yaml.Unmarshal(data, &yamlData)
+	if err == nil {
+		return true
+	}
+	return false
 }
 
 func isJson(filePath string) bool {
-    data, err := ioutil.ReadFile(filePath)
-    if err != nil {
-        fmt.Errorf("Error reading file:", err)
-    }
-    var jsonData interface{}
-    err = json.Unmarshal(data, &jsonData)
-    if err == nil {
-        return true
-    }
-    return false
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		fmt.Errorf("Error reading file:", err)
+	}
+	var jsonData interface{}
+	err = json.Unmarshal(data, &jsonData)
+	if err == nil {
+		return true
+	}
+	return false
 }
