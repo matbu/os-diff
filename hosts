@@ -1,14 +1,14 @@
 ocp:
   hosts:
-    localhost:
+    crc:
       ansible_connection: local
 
 undercloud:
   hosts:
-    localhost:
+    undercloud-0:
       ansible_connection: ssh
 
 standalone:
   hosts:
-    172.16.0.74:
+    standalone-0:
       ansible_connection: ssh
