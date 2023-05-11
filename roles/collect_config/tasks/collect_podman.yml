@@ -25,6 +25,7 @@
       recurse: true
 
   - name: Pull configuration files from podman container {{ service.key }}
+    ignore_errors: yes
     command: podman cp {{ container_id }}:{{ config_path }}/{{ item }} {{ working_dir }}/podman/{{ config_path }}/{{ item }}
     become: yes
     loop: "{{ service.value.name }}"
