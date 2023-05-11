@@ -98,8 +98,6 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) []string 
     colorRed := "\033[31m"
     colorReset := "\033[0m"
     // Check for differences
-    f.reportLines = append(f.reportLines, fmt.Sprintf("Compare configuration file: %s with configuration file: %s\n", origin, dest))
-
     for _, sec1 := range cfg1.Sections() {
         sec2, err := cfg2.GetSection(sec1.Name())
         if err != nil {
@@ -161,9 +159,11 @@ func (f *CompareFileNames) CompareFiles() ([]string, error) {
 
   }
   filePath := "/tmp/" + f.Origin + ".diff"
-  err = writeReport(reports, filePath)
-  if err != nil {
-      fmt.Println(err)
+  if len(reports) != 0 {
+    err = writeReport(reports, filePath)
+    if err != nil {
+        fmt.Println(err)
+    }
   }
 	return reports, nil
 }
