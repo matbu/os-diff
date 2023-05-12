@@ -30,7 +30,7 @@ import (
 type CompareFileNames struct {
 	Origin      string
 	Destination string
-	reportLines []string
+	DiffReport  []string
 }
 
 func writeReport(content []string, reportPath string) error {
@@ -47,14 +47,12 @@ func writeReport(content []string, reportPath string) error {
 	return nil
 }
 
-// @todo : detect config type: json / ini / yaml
-func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) []string {
+func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) error {
 	// Console colors
 	colorRed := "\033[31m"
 	colorReset := "\033[0m"
 	// Check for differences
-	reportLines := []string{}
-	reportLines = append(reportLines, fmt.Sprintf("Compare configuration file: %s with configuration file: %s\n", f.Origin, f.Destination))
+	f.DiffReport = append(f.DiffReport, fmt.Sprintf("Compare configuration file: %s with configuration file: %s\n", f.Origin, f.Destination))
 
 	for i, line1 := range file1 {
 		found := false
@@ -68,7 +66,7 @@ func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) []string {
 					if config1[0] == config2[0] {
 						if config1[1] != config2[1] {
 							fmt.Println("*** Difference detected:", string(colorRed), line1, line2, string(colorReset))
-							reportLines = append(reportLines, fmt.Sprintf("Line %d: %s, different with %s\n", j+1, line1, line2))
+							f.DiffReport = append(f.DiffReport, fmt.Sprintf("Line %d: %s, different with %s\n", j+1, line1, line2))
 						}
 						found = true
 					}
@@ -76,14 +74,14 @@ func (f *CompareFileNames) makeDiff(file1 []string, file2 []string) []string {
 			}
 			if !found {
 				fmt.Println("--- Line not found:", string(colorRed), line1, string(colorReset))
-				reportLines = append(reportLines, fmt.Sprintf("Line %d: %s, Not found \n", i+1, line1))
+				f.DiffReport = append(f.DiffReport, fmt.Sprintf("Line %d: %s, Not found \n", i+1, line1))
 			}
 		}
 	}
-	return reportLines
+	return nil
 }
 
-func (f *CompareFileNames) CompareIniFiles(origin string, dest string) []string {
+func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
 	// Load the first INI file
 	cfg1, err := ini.Load(origin)
 	if err != nil {
@@ -102,38 +100,37 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) []string 
 	for _, sec1 := range cfg1.Sections() {
 		sec2, err := cfg2.GetSection(sec1.Name())
 		if err != nil {
-			msg := fmt.Sprintf("Section %s not found in %s \n", sec1.Name(), dest)
-			if !stringInSlice(msg, f.reportLines) {
+			msg := fmt.Sprintf("-[%s]\n", sec1.Name())
+			if !stringInSlice(msg, f.DiffReport) {
 				fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " not found in:", dest, string(colorReset))
-				f.reportLines = append(f.reportLines, msg)
+				f.DiffReport = append(f.DiffReport, msg)
 			}
 		}
 
 		for _, key1 := range sec1.Keys() {
 			key2, err := sec2.GetKey(key1.Name())
 			if err != nil {
-				msg := fmt.Sprintf("Key %s not found in section %s of %s \n", key1.Name(), sec1.Name(), dest)
-				if !stringInSlice(msg, f.reportLines) {
+				msg := fmt.Sprintf("[%s]\n-%s=%s\n", sec1.Name(), key1.Name(), key1.Value())
+				if !stringInSlice(msg, f.DiffReport) {
+					fmt.Println(f.DiffReport)
 					fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " Key ", key1.Name(), " not found in:", dest, string(colorReset))
-					f.reportLines = append(f.reportLines, msg)
+					f.DiffReport = append(f.DiffReport, msg)
 				}
 			} else {
 				if key1.Value() != key2.Value() {
-					msg := fmt.Sprintf("Value of key %s in section %s is different between %s and %s \n", key1.Name(), sec1.Name(), origin, dest)
-					if !stringInSlice(msg, f.reportLines) {
+					msg := fmt.Sprintf("[%s]\n+%s=%s\n-%s=%s\n", sec1.Name(), key1.Name(), key1.Value(), key2.Name(), key2.Value())
+					if !stringInSlice(msg, f.DiffReport) {
 						fmt.Println(string(colorRed), "*** Difference detected: Values are not equal: ", key1.Value(), " and ", key2.Value(), "Section: ", sec1.Name(), " Key ", key1.Name(), dest, string(colorReset))
-						f.reportLines = append(f.reportLines, msg)
+						f.DiffReport = append(f.DiffReport, msg)
 					}
 				}
 			}
 		}
 	}
-
-	return f.reportLines
+	return nil
 }
 
 func (f *CompareFileNames) CompareFiles() ([]string, error) {
-	// Compare two files
 	// Read the files
 	orgContent, err := ioutil.ReadFile(f.Origin)
 	if err != nil {
@@ -144,26 +141,27 @@ func (f *CompareFileNames) CompareFiles() ([]string, error) {
 		return nil, errors.New("Failed to open file: '" + f.Destination + "'. " + err.Error())
 	}
 	// Detect type
-	reports := []string{}
 	if isIni(f.Origin) {
-		reports = f.CompareIniFiles(f.Origin, f.Destination)
-		reports = append(reports, f.CompareIniFiles(f.Origin, f.Destination)...)
+		f.CompareIniFiles(f.Origin, f.Destination)
+		// reverse comparison
+		f.CompareIniFiles(f.Origin, f.Destination)
 	} else {
 		// Split both files into lines
 		orgLines := strings.Split(string(orgContent), "\n")
 		destLines := strings.Split(string(destContent), "\n")
 		// Check for differences
-		reports = f.makeDiff(orgLines, destLines)
+		f.makeDiff(orgLines, destLines)
+		f.makeDiff(destLines, orgLines)
+		//reports := []string{}
 		//dest_org_comparison := f.makeDiff(destLines, orgLines)
-		reports = append(reports, f.makeDiff(destLines, orgLines)...)
-
+		//reports = append(reports, f.makeDiff(destLines, orgLines)...)
 	}
 	filePath := "/tmp/" + f.Origin + ".diff"
-	if len(reports) != 0 {
-		err = writeReport(reports, filePath)
+	if len(f.DiffReport) != 0 {
+		err = writeReport(f.DiffReport, filePath)
 		if err != nil {
 			fmt.Println(err)
 		}
 	}
-	return reports, nil
+	return f.DiffReport, nil
 }
