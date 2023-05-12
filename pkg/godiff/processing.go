@@ -17,7 +17,10 @@
 package godiff
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -32,6 +35,41 @@ type GoDiffDataStruct struct {
 	wrongTypeInOrg  []string
 	wrongTypeInDest []string
 	unmatchFile     []string
+}
+
+func filesEqual(file1, file2 string) (bool, error) {
+	// Open file
+	f1, err := os.Open(file1)
+	if err != nil {
+		return false, err
+	}
+	defer f1.Close()
+	f2, err := os.Open(file2)
+	if err != nil {
+		return false, err
+	}
+	defer f2.Close()
+
+	// Get the hash of the first file
+	h1 := md5.New()
+	if _, err := io.Copy(h1, f1); err != nil {
+		return false, err
+	}
+	hash1 := hex.EncodeToString(h1.Sum(nil))
+
+	// Get the hash of the second file
+	h2 := md5.New()
+	if _, err := io.Copy(h2, f2); err != nil {
+		return false, err
+	}
+	hash2 := hex.EncodeToString(h2.Sum(nil))
+
+	// Compare the hashes of the files
+	if hash1 != hash2 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func checkFile(path1 string, path2 string) (bool, error) {
@@ -121,7 +159,7 @@ func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
 				}
 			}
 			if !file1.IsDir() && !file2.IsDir() {
-				check, err := checkFile(path, path2)
+				check, err := filesEqual(path, path2)
 				if err != nil {
 					return err
 				}

@@ -112,7 +112,6 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
 			if err != nil {
 				msg := fmt.Sprintf("[%s]\n-%s=%s\n", sec1.Name(), key1.Name(), key1.Value())
 				if !stringInSlice(msg, f.DiffReport) {
-					fmt.Println(f.DiffReport)
 					fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " Key ", key1.Name(), " not found in:", dest, string(colorReset))
 					f.DiffReport = append(f.DiffReport, msg)
 				}
