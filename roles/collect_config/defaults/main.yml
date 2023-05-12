@@ -1,7 +1,9 @@
 ---
 # Path where the config files should be pulled
-collect_dir: /tmp/collect_tripleo_configs
+tripleo_collect_dir: collect_tripleo_configs
+crc_collect_dir: collect_crc_configs
 working_dir: /tmp
+local_working_dir: /tmp
 
 collect_podman: false
 collect_ocp: false
@@ -10,3 +12,5 @@ collect_ocp: false
 oc_host: https://api.crc.testing:6443
 oc_login: kubeadmin
 oc_passwd: 12345678
+
+pull_items: false

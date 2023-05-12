@@ -17,15 +17,28 @@
   - name: Create {{ service.key }} directory
     become: true
     file:
-      path: "{{ working_dir }}/podman/{{ config_path }}"
+      path: "{{ working_dir }}/{{ tripleo_collect_dir }}/{{ config_path }}"
       state: directory
       mode: "0755"
       owner: "{{ ansible_user_id }}"
       group: "{{ ansible_user_id }}"
       recurse: true
 
-  - name: Pull configuration files from podman container {{ service.key }}
+  - name: Pull configuration files from podman container {{ service.key }} - per items
     ignore_errors: yes
     command: podman cp {{ container_id }}:{{ config_path }}/{{ item }} {{ working_dir }}/podman/{{ config_path }}/{{ item }}
     become: yes
     loop: "{{ service.value.name }}"
+    when: pull_items
+
+  - name: Pull configuration files from podman container {{ service.key }} - all
+    ignore_errors: yes
+    command: podman cp {{ container_id }}:{{ config_path }}/ {{ working_dir }}/{{ tripleo_collect_dir }}/{{ config_path }}/
+    become: yes
+    when: not pull_items
+
+  - name: Fetch TripleO configs
+    synchronize:
+      src: "{{ working_dir }}/{{ tripleo_collect_dir }}"
+      dest: "{{ local_working_dir }}"
+      mode: pull
