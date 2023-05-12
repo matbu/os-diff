@@ -92,6 +92,7 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
 		fmt.Errorf("Erro while loading file %s: %s", dest, err)
 	}
 
+	diffFound := false
 	// Compare the sections and keys in each file
 	// Console colors
 	colorRed := "\033[31m"
@@ -102,16 +103,17 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
 		if err != nil {
 			msg := fmt.Sprintf("-[%s]\n", sec1.Name())
 			if !stringInSlice(msg, f.DiffReport) {
+				diffFound = true
 				fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " not found in:", dest, string(colorReset))
 				f.DiffReport = append(f.DiffReport, msg)
 			}
 		}
-
 		for _, key1 := range sec1.Keys() {
 			key2, err := sec2.GetKey(key1.Name())
 			if err != nil {
 				msg := fmt.Sprintf("[%s]\n-%s=%s\n", sec1.Name(), key1.Name(), key1.Value())
 				if !stringInSlice(msg, f.DiffReport) {
+					diffFound = true
 					fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " Key ", key1.Name(), " not found in:", dest, string(colorReset))
 					f.DiffReport = append(f.DiffReport, msg)
 				}
@@ -119,12 +121,17 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
 				if key1.Value() != key2.Value() {
 					msg := fmt.Sprintf("[%s]\n+%s=%s\n-%s=%s\n", sec1.Name(), key1.Name(), key1.Value(), key2.Name(), key2.Value())
 					if !stringInSlice(msg, f.DiffReport) {
+						diffFound = true
 						fmt.Println(string(colorRed), "*** Difference detected: Values are not equal: ", key1.Value(), " and ", key2.Value(), "Section: ", sec1.Name(), " Key ", key1.Name(), dest, string(colorReset))
 						f.DiffReport = append(f.DiffReport, msg)
 					}
 				}
 			}
 		}
+	}
+	if diffFound {
+		msg := fmt.Sprintf("Source file path: %s, difference with: %s\n", origin, dest)
+		f.DiffReport = append([]string{msg}, f.DiffReport...)
 	}
 	return nil
 }
