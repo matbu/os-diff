@@ -44,4 +44,10 @@
     ignore_errors: yes
     register: config_results
     shell: |
-      {{ oc_bin }} cp {{ pod_id }}:{{ config_path }}/ {{ working_dir }}/ocp/{{ config_path }}/
+      {{ oc_bin }} cp {{ pod_id }}:{{ config_path }}/ {{ working_dir }}/{{ crc_collect_dir }}/{{ config_path }}/
+
+  - name: Fetch CRC configs
+    synchronize:
+      src: "{{ working_dir }}/{{ crc_collect_dir }}"
+      dest: "{{ local_working_dir }}"
+      mode: pull
