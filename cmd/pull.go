@@ -17,8 +17,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"os-diff/pkg/ansible"
 
 	"github.com/spf13/cobra"
@@ -63,7 +61,6 @@ var pullCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("pull called")
 	},
 }
 

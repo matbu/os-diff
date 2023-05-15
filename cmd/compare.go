@@ -17,8 +17,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"os-diff/pkg/godiff"
 
 	"github.com/spf13/cobra"
@@ -44,7 +42,6 @@ os-diff compare --origin=tests/podman/keystone.conf --destination=tests/ocp/keys
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("Compare called")
 	},
 }
 
