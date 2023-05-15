@@ -25,7 +25,6 @@ import (
 	"path/filepath"
 )
 
-// @todo : checksum before doing anything
 type GoDiffDataStruct struct {
 	Origin          string
 	Destination     string
@@ -38,6 +37,11 @@ type GoDiffDataStruct struct {
 }
 
 func filesEqual(file1, file2 string) (bool, error) {
+	/*
+		Compare hashes of file1 and file2 and return a boolean:
+		true if files are equal,
+		false if not
+	*/
 	// Open file
 	f1, err := os.Open(file1)
 	if err != nil {
@@ -74,10 +78,10 @@ func filesEqual(file1, file2 string) (bool, error) {
 
 func checkFile(path1 string, path2 string) (bool, error) {
 	/*
-	   return:
-	   true if files are equal, error nil
-	   false if there is a difference, error nil
-	   false and error not nil if an error occur
+		Read file1 and file2 and return boolean if file content are strickly equal:
+		true if files are equal, error nil
+		false if there is a difference, error nil
+		false and error not nil if an error occur
 	*/
 	statFile1, err := os.Stat(path1)
 	if err != nil {
@@ -111,9 +115,7 @@ func checkFile(path1 string, path2 string) (bool, error) {
 	for {
 		n1, err1 := file1.Read(buf1)
 		n2, err2 := file2.Read(buf2)
-
 		if err1 != nil || err2 != nil || n1 != n2 {
-			fmt.Printf("Files %s and %s are different\n", path1, path2)
 			return false, nil
 			break
 		}
@@ -121,7 +123,6 @@ func checkFile(path1 string, path2 string) (bool, error) {
 			break
 		}
 		if string(buf1[:n1]) != string(buf2[:n2]) {
-			fmt.Printf("Files %s and %s are different\n", path1, path2)
 			return false, nil
 			break
 		}
@@ -130,7 +131,12 @@ func checkFile(path1 string, path2 string) (bool, error) {
 }
 
 func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
-	// Walk through the first directory and compare each file to the second directory
+	/*
+		Walk through the first directory and compare each files with the second directory:
+		check by file hashes,
+		if different, compare line by line.
+		report and log results.
+	*/
 	// Start to process
 	fmt.Println("Start processing: ", dir1, "and: ", dir2, "\n")
 	// Walk through DIR 1
@@ -145,6 +151,7 @@ func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
 		file2, err := os.Stat(path2)
 		if err != nil {
 			if !stringInSlice(path, p.missingPath) {
+				//p.missingPath = append(p.missingPath, fmt.Sprintf("%s\n", path))
 				p.missingPath = append(p.missingPath, path)
 			}
 		} else {
@@ -165,7 +172,6 @@ func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
 				}
 				if !check {
 					// Compare the two files
-					fmt.Println("Start compare in file: ", path, "and: ", path2, "\n")
 					if !stringInSlice(path, p.unmatchFile) {
 						p.unmatchFile = append(p.unmatchFile, path)
 
@@ -198,11 +204,12 @@ func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
 	return nil
 }
 
-func (p *GoDiffDataStruct) ProcessDirectories() error {
+func (p *GoDiffDataStruct) ProcessDirectories(reverse bool) error {
 	// Compare origin vs destination
 	p.Process(p.Origin, p.Destination)
-	// Compare destination vs origin
-	p.Process(p.Destination, p.Origin)
+	if reverse {
+		p.Process(p.Destination, p.Origin)
+	}
 	fmt.Printf("Missing files: %s \n", p.missingPath)
 	fmt.Printf("Files with differences: %s \n", p.unmatchFile)
 	fmt.Printf("Different file type in origin: %s \n", p.wrongTypeInOrg)

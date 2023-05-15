@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"os-diff/pkg/godiff"
+
 	"github.com/spf13/cobra"
 )
 
@@ -27,6 +28,7 @@ import (
 var origin string
 var destination string
 var output string
+var reverse bool
 
 var compareCmd = &cobra.Command{
 	Use:   "compare",
@@ -35,11 +37,11 @@ var compareCmd = &cobra.Command{
 os-diff compare --origin=tests/podman/keystone.conf --destination=tests/ocp/keystone.conf --output=output.txt`,
 	Run: func(cmd *cobra.Command, args []string) {
 		goDiff := &godiff.GoDiffDataStruct{
-			Origin: origin,
-	    Destination: destination,
+			Origin:      origin,
+			Destination: destination,
 		}
-	  err := goDiff.ProcessDirectories()
-	  if err != nil {
+		err := goDiff.ProcessDirectories(reverse)
+		if err != nil {
 			panic(err)
 		}
 		fmt.Println("Compare called")
@@ -50,5 +52,6 @@ func init() {
 	compareCmd.Flags().StringVar(&origin, "origin", "", "Origin file or directory.")
 	compareCmd.Flags().StringVar(&destination, "destination", "", "Destination file or directory")
 	compareCmd.Flags().StringVar(&output, "output", "output.txt", "Output file (default is $PWD/output.txt)")
+	pullCmd.Flags().BoolVar(&reverse, "reverse", false, "Search difference in both directories: origin and destination.")
 	rootCmd.AddCommand(compareCmd)
 }

@@ -19,7 +19,7 @@ package godiff
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"reflect"
 
 	"github.com/go-yaml/yaml"
 )
@@ -33,40 +33,73 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-func isIni(filePath string) bool {
-	// @todo pass directly file content to avoid read duplication
-	data, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		fmt.Errorf("Error reading file:", err)
-	}
+func isIni(data []byte) bool {
 	if data[0] == '[' {
 		return true
 	}
 	return false
 }
 
-func isYaml(filePath string) bool {
-	data, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		fmt.Errorf("Error reading file:", err)
-	}
+func isYaml(data []byte) bool {
 	var yamlData interface{}
-	err = yaml.Unmarshal(data, &yamlData)
+	err := yaml.Unmarshal(data, &yamlData)
 	if err == nil {
 		return true
 	}
 	return false
 }
 
-func isJson(filePath string) bool {
-	data, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		fmt.Errorf("Error reading file:", err)
-	}
+func isJson(data []byte) bool {
 	var jsonData interface{}
-	err = json.Unmarshal(data, &jsonData)
+	err := json.Unmarshal(data, &jsonData)
 	if err == nil {
+		// fmt.Errorf("Faild to unmarshal json file %s", err)
 		return true
 	}
 	return false
+}
+
+func compareJSON(orgData, destData interface{}, path string) ([]string, error) {
+	if reflect.TypeOf(orgData) != reflect.TypeOf(destData) {
+		//fmt.Println("Type mismatch at %s: %T != %T\n", path, orgData, destData)
+		return nil, fmt.Errorf("Type mismatch at %s: %T != %T\n", path, orgData, destData)
+	}
+
+	var diff []string
+	msg := string("")
+	switch orgData := orgData.(type) {
+	case map[string]interface{}:
+		destData := destData.(map[string]interface{})
+		for key, value := range orgData {
+			if value2, ok := destData[key]; ok {
+				compareJSON(value, value2, path+"."+key)
+			} else {
+				//fmt.Println("Key %s not found in second JSON\n", path+"."+key)
+				msg = fmt.Sprintf("+%s", key)
+				diff = append(diff, msg)
+			}
+		}
+		for key := range destData {
+			if _, ok := orgData[key]; !ok {
+				//fmt.Println("Key %s not found in first JSON\n", path+"."+key)
+				msg = fmt.Sprintf("-%s", key)
+				diff = append(diff, msg)
+			}
+		}
+	case []interface{}:
+		destData := destData.([]interface{})
+		if len(orgData) != len(destData) {
+			//fmt.Println("Array length mismatch at %s: %d != %d\n", path, len(orgData), len(destData))
+			return diff, fmt.Errorf("Array length mismatch at %s: %d != %d\n", path, len(orgData), len(destData))
+		}
+		for i := range orgData {
+			compareJSON(orgData[i], destData[i], fmt.Sprintf("%s[%d]", path, i))
+		}
+	default:
+		if !reflect.DeepEqual(orgData, destData) {
+			//fmt.Println("Value mismatch at %s: %v != %v\n", path, orgData, destData)
+			return diff, nil
+		}
+	}
+	return diff, nil
 }

@@ -50,4 +50,5 @@ os-diff compare --origin=tests/podman/keystone.conf --destination=tests/ocp/keys
 ### TODO
 
 * Add option to compare the config files directly from files to pods
-* Handle other config type: yaml, json.
+* Improve reporting (console, debug and log file with general report)
+* Improve diff output for json and yaml
