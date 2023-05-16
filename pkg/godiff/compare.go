@@ -51,6 +51,7 @@ func writeReport(content []string, reportPath string) error {
 }
 
 func (f *CompareFileNames) Compare(origin []byte, destination []byte) error {
+	log.Info("Start basic line by line comparison")
 	// Split both files into lines
 	file1 := strings.Split(string(origin), "\n")
 	file2 := strings.Split(string(destination), "\n")
@@ -71,6 +72,7 @@ func (f *CompareFileNames) Compare(origin []byte, destination []byte) error {
 				}
 			}
 			if !found {
+				log.Warn("Line: ", line1, "not found in: ", f.Destination)
 				msg = fmt.Sprintf("+%s\n", line1)
 				f.DiffReport = append(f.DiffReport, msg)
 				diffFound = true
@@ -90,6 +92,7 @@ func (f *CompareFileNames) Compare(origin []byte, destination []byte) error {
 				}
 			}
 			if !found {
+				log.Warn("Line: ", line2, "not found in: ", f.Origin)
 				msg = fmt.Sprintf("-%s\n", line2)
 				f.DiffReport = append(f.DiffReport, msg)
 				diffFound = true
@@ -97,6 +100,7 @@ func (f *CompareFileNames) Compare(origin []byte, destination []byte) error {
 		}
 	}
 	if diffFound {
+		log.Warn("File: ", f.Origin, " has difference with: ", f.Destination)
 		msg := fmt.Sprintf("Source file path: %s, difference with: %s\n", f.Origin, f.Destination)
 		f.DiffReport = append([]string{msg}, f.DiffReport...)
 	}
@@ -159,25 +163,22 @@ func (f *CompareFileNames) CompareYamlFiles(origin []byte, dest []byte) error {
 }
 
 func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
-	// Load the first INI file
+	// Load the INI files
 	cfg1, err := ini.Load(origin)
 	if err != nil {
+		log.Error("Error while loading file: ", origin, err)
 		return fmt.Errorf("Error while loading file %s: %s", origin, err)
 	}
 	cfg2, err := ini.Load(dest)
 	if err != nil {
+		log.Error("Error while loading file: ", dest, err)
 		return fmt.Errorf("Erro while loading file %s: %s", dest, err)
 	}
 
-	debug := false
 	diffFound := false
 	sectionFound := false
 	msg := string("")
 	// Compare the sections and keys in each file
-	// Console colors
-	colorRed := "\033[31m"
-	colorReset := "\033[0m"
-	// Check for differences
 	for _, sec1 := range cfg1.Sections() {
 		sectionFound = false
 		sec2, err := cfg2.GetSection(sec1.Name())
@@ -185,9 +186,7 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
 			msg := fmt.Sprintf("-[%s]\n", sec1.Name())
 			if !stringInSlice(msg, f.DiffReport) {
 				diffFound = true
-				if debug {
-					fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " not found in:", dest, string(colorReset))
-				}
+				log.Warn("Difference detected. Section: ", sec1.Name(), " not found in:", dest)
 				f.DiffReport = append(f.DiffReport, msg)
 				break
 			}
@@ -203,24 +202,29 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
 				}
 				if !stringInSlice(msg, f.DiffReport) {
 					diffFound = true
-					if debug {
-						fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec1.Name(), " Key ", key1.Name(), " not found in:", dest, string(colorReset))
-					}
+					log.Warn("Difference detected. Section: ", sec1.Name(), " Key ", key1.Name(), " not found in:", dest)
 					f.DiffReport = append(f.DiffReport, msg)
 				}
 			} else {
 				if key1.Value() != key2.Value() {
 					if !sectionFound {
 						sectionFound = true
-						msg = fmt.Sprintf("[%s]\n+%s=%s\n-%s=%s\n", sec1.Name(), key1.Name(), key1.Value(), key2.Name(), key2.Value())
+						msg = fmt.Sprintf(
+							"[%s]\n+%s=%s\n-%s=%s\n",
+							sec1.Name(),
+							key1.Name(),
+							key1.Value(),
+							key2.Name(),
+							key2.Value(),
+						)
 					} else {
 						msg = fmt.Sprintf("+%s=%s\n-%s=%s\n", key1.Name(), key1.Value(), key2.Name(), key2.Value())
 					}
 					if !stringInSlice(msg, f.DiffReport) {
 						diffFound = true
-						if debug {
-							fmt.Println(string(colorRed), "*** Difference detected: Values are not equal: ", key1.Value(), " and ", key2.Value(), "Section: ", sec1.Name(), " Key ", key1.Name(), dest, string(colorReset))
-						}
+						log.Warn("Difference detected: Values are not equal: ",
+							key1.Value(), " and ", key2.Value(),
+							"Section: ", sec1.Name(), " Key ", key1.Name(), dest)
 						f.DiffReport = append(f.DiffReport, msg)
 					}
 				}
@@ -238,15 +242,14 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
 				}
 				if !stringInSlice(msg, f.DiffReport) {
 					diffFound = true
-					if debug {
-						fmt.Println(string(colorRed), "*** Difference detected -- Section: ", sec2.Name(), " Key ", key2.Name(), " not found in:", dest, string(colorReset))
-					}
+					log.Warn("Difference detected -- Section: ", sec2.Name(), " Key ", key2.Name(), " not found in:", dest)
 					f.DiffReport = append(f.DiffReport, msg)
 				}
 			}
 		}
 	}
 	if diffFound {
+		log.Warn("File: ", origin, " has difference with: ", dest)
 		msg := fmt.Sprintf("Source file path: %s, difference with: %s\n", origin, dest)
 		f.DiffReport = append([]string{msg}, f.DiffReport...)
 	}
@@ -255,26 +258,37 @@ func (f *CompareFileNames) CompareIniFiles(origin string, dest string) error {
 
 func (f *CompareFileNames) CompareFiles() ([]string, error) {
 	// Read the files
+	log.Info("Start to compare file contents for: ", f.Origin, " and: ", f.Destination)
 	orgContent, err := ioutil.ReadFile(f.Origin)
 	if err != nil {
+		log.Error("Failed to read file", f.Origin, "\n")
 		return nil, errors.New("Failed to open file: '" + f.Origin + "'. " + err.Error())
 	}
 	destContent, err := ioutil.ReadFile(f.Destination)
 	if err != nil {
+		log.Error("Failed to read file", f.Origin, "\n")
 		return nil, errors.New("Failed to open file: '" + f.Destination + "'. " + err.Error())
 	}
 	// Detect type
 	if isIni(orgContent) && isIni(destContent) {
+		log.Info("Files detected as Ini files, start to process contents")
 		err := f.CompareIniFiles(f.Origin, f.Destination)
 		// if error occur, try to make a basic diff
 		if err != nil {
+			log.Warn(
+				"Error while processing files: ",
+				f.Origin, " and ",
+				f.Destination, " try to compare as a standard type...")
 			f.Compare(orgContent, destContent)
 		}
 	} else if isJson(orgContent) && isJson(destContent) {
+		log.Info("Files detected as JSON files, start to process contents")
 		f.CompareJsonFiles(orgContent, destContent)
 	} else if isYaml(orgContent) && isYaml(destContent) {
+		log.Info("Files detected as YAML files, start to process contents")
 		f.CompareYamlFiles(orgContent, destContent)
 	} else {
+		log.Info("No specific type detected, process to a standard line by line comparison...")
 		// Check for differences
 		f.Compare(orgContent, destContent)
 	}
@@ -282,6 +296,7 @@ func (f *CompareFileNames) CompareFiles() ([]string, error) {
 	if len(f.DiffReport) != 0 {
 		err = writeReport(f.DiffReport, filePath)
 		if err != nil {
+			log.Error("Error while trying to create diff file in the file system: ", filePath)
 			fmt.Println(err)
 		}
 	}

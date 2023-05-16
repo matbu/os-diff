@@ -23,7 +23,11 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/sirupsen/logrus"
 )
+
+var log = logrus.New()
 
 type GoDiffDataStruct struct {
 	Origin          string
@@ -36,6 +40,25 @@ type GoDiffDataStruct struct {
 	unmatchFile     []string
 }
 
+func init() {
+	file, err := os.OpenFile("compare.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		log.Formatter = &logrus.TextFormatter{
+			FullTimestamp:          false,
+			DisableTimestamp:       true,
+			ForceColors:            true,
+			DisableLevelTruncation: true,
+			PadLevelText:           true,
+		}
+		multi := io.MultiWriter(os.Stdout, file)
+		log.SetOutput(multi)
+		// log.Out = file
+		// log.SetOutput(os.Stdout)
+	} else {
+		log.Info("Failed to log to file, using default stderr")
+	}
+}
+
 func filesEqual(file1, file2 string) (bool, error) {
 	/*
 		Compare hashes of file1 and file2 and return a boolean:
@@ -45,11 +68,13 @@ func filesEqual(file1, file2 string) (bool, error) {
 	// Open file
 	f1, err := os.Open(file1)
 	if err != nil {
+		log.Error("Failed to open: ", file1, " error: ", err)
 		return false, err
 	}
 	defer f1.Close()
 	f2, err := os.Open(file2)
 	if err != nil {
+		log.Error("Failed to open: ", file2, " error: ", err)
 		return false, err
 	}
 	defer f2.Close()
@@ -57,6 +82,7 @@ func filesEqual(file1, file2 string) (bool, error) {
 	// Get the hash of the first file
 	h1 := md5.New()
 	if _, err := io.Copy(h1, f1); err != nil {
+		log.Error("Failed to get hash for: ", file1, " error: ", err)
 		return false, err
 	}
 	hash1 := hex.EncodeToString(h1.Sum(nil))
@@ -64,15 +90,18 @@ func filesEqual(file1, file2 string) (bool, error) {
 	// Get the hash of the second file
 	h2 := md5.New()
 	if _, err := io.Copy(h2, f2); err != nil {
+		log.Error("Failed to get hash for: ", file1, " error: ", err)
 		return false, err
 	}
 	hash2 := hex.EncodeToString(h2.Sum(nil))
 
 	// Compare the hashes of the files
 	if hash1 != hash2 {
+		log.Warn("Files: ", file1, " and: ", file2, " are differents.")
 		return false, nil
 	}
 
+	log.Info("Files: ", file1, " and: ", file2, " are equals.")
 	return true, nil
 }
 
@@ -137,8 +166,6 @@ func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
 		if different, compare line by line.
 		report and log results.
 	*/
-	// Start to process
-	fmt.Println("Start processing: ", dir1, "and: ", dir2, "\n")
 	// Walk through DIR 1
 	filepath.Walk(dir1, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -151,17 +178,19 @@ func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
 		file2, err := os.Stat(path2)
 		if err != nil {
 			if !stringInSlice(path, p.missingPath) {
-				//p.missingPath = append(p.missingPath, fmt.Sprintf("%s\n", path))
+				log.Info("File is missing: ", path, "\n")
 				p.missingPath = append(p.missingPath, path)
 			}
 		} else {
 			if file1.IsDir() && !file2.IsDir() {
 				if !stringInSlice(path, p.wrongTypeInOrg) {
+					log.Info("File: ", path, "and: ", path2, " have different type (directory vs file)")
 					p.wrongTypeInOrg = append(p.wrongTypeInOrg, path)
 				}
 			}
 			if !file1.IsDir() && file2.IsDir() {
 				if !stringInSlice(path, p.wrongTypeInDest) {
+					log.Info("File: ", path, "and: ", path2, " have different type (directory vs file)")
 					p.wrongTypeInDest = append(p.wrongTypeInDest, path2)
 				}
 			}
@@ -185,7 +214,6 @@ func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
 						}
 
 						if report != nil {
-							// File didnt match
 							if !stringInSlice(path, p.unmatchFile) {
 								p.unmatchFile = append(p.unmatchFile, path)
 							}
@@ -206,10 +234,12 @@ func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
 
 func (p *GoDiffDataStruct) ProcessDirectories(reverse bool) error {
 	// Compare origin vs destination
+	log.Info("Start processing: ", p.Origin, " as source and: ", p.Destination, " as destination.")
 	p.Process(p.Origin, p.Destination)
 	if reverse {
 		p.Process(p.Destination, p.Origin)
 	}
+	fmt.Printf("\n*** Report ****\n")
 	fmt.Printf("Missing files: %s \n", p.missingPath)
 	fmt.Printf("Files with differences: %s \n", p.unmatchFile)
 	fmt.Printf("Different file type in origin: %s \n", p.wrongTypeInOrg)
