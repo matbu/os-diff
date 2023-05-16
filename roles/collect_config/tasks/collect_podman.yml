@@ -8,21 +8,26 @@
 
   - name: Set fact for container id {{ service.key }}
     set_fact:
-      container_id: "{{ results.stdout }}"
+      container_id: "{{ results.stdout | split('\n') }}"
 
-  - name: Set fact for {{ service.key }} path
+  - name: Set fact for service name
+    set_fact:
+      service_name: "{{ service.key }}"
+
+  - name: Set fact for {{ service_name }} path
     set_fact:
       config_path: "{{ service.value.path }}"
 
-  - name: Create {{ service.key }} directory
+  - name: Create {{ service_name }} directory
     become: true
     file:
-      path: "{{ working_dir }}/{{ tripleo_collect_dir }}/{{ config_path }}"
+      path: "{{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}/{{ item }}/{{ config_path }}"
       state: directory
       mode: "0755"
       owner: "{{ ansible_user_id }}"
       group: "{{ ansible_user_id }}"
       recurse: true
+    loop: "{{ container_id }}"
 
   - name: Pull configuration files from podman container {{ service.key }} - per items
     ignore_errors: yes
@@ -31,14 +36,15 @@
     loop: "{{ service.value.name }}"
     when: pull_items
 
-  - name: Pull configuration files from podman container {{ service.key }} - all
+  - name: Pull configuration files from podman container {{ service_name }} - all
     ignore_errors: yes
-    command: podman cp {{ container_id }}:{{ config_path }}/ {{ working_dir }}/{{ tripleo_collect_dir }}/{{ config_path }}/
+    command: podman cp {{ item }}:{{ config_path }}/ {{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}/{{ item }}/{{ config_path }}/
     become: yes
     when: not pull_items
+    loop: "{{ container_id }}"
 
   - name: Fetch TripleO configs
     synchronize:
-      src: "{{ working_dir }}/{{ tripleo_collect_dir }}"
+      src: "{{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}"
       dest: "{{ local_working_dir }}"
       mode: pull

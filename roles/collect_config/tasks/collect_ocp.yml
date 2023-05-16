@@ -24,30 +24,36 @@
 
   - name: Set fact for pod id
     set_fact:
-      pod_id: "{{ results.stdout }}"
+      pod_id: "{{ results.stdout | split('\n') }}"
 
-  - name: Set fact for {{ service.key }} path
+  - name: Set fact for service name
+    set_fact:
+      service_name: "{{ service.key }}"
+
+  - name: Set fact for {{ service_name }} path
     set_fact:
       config_path: "{{ service.value.path }}"
 
-  - name: Create {{ service.key }} directory
+  - name: Create {{ service_name}} directory
     become: true
     file:
-      path: "{{ working_dir }}/{{ crc_collect_dir }}/{{ config_path }}"
+      path: "{{ working_dir }}/{{ crc_collect_dir }}/{{ service_name }}/{{ item }}/{{ config_path }}"
       state: directory
       mode: "0755"
       owner: "{{ ansible_user_id }}"
       group: "{{ ansible_user_id }}"
       recurse: true
+    loop: "{{ pod_id }}"
 
-  - name: Pull configuration files from {{ service }} pod
+  - name: Pull configuration files from {{ service_name }} pod
     ignore_errors: yes
     register: config_results
     shell: |
-      {{ oc_bin }} cp {{ pod_id }}:{{ config_path }}/ {{ working_dir }}/{{ crc_collect_dir }}/{{ config_path }}/
+      {{ oc_bin }} cp {{ item }}:{{ config_path }}/ {{ working_dir }}/{{ crc_collect_dir }}/{{ service_name }}/{{ item }}/{{ config_path }}/
+    loop: "{{ pod_id }}"
 
   - name: Fetch CRC configs
     synchronize:
-      src: "{{ working_dir }}/{{ crc_collect_dir }}"
+      src: "{{ working_dir }}/{{ crc_collect_dir }}/{{ service_name }}"
       dest: "{{ local_working_dir }}"
       mode: pull

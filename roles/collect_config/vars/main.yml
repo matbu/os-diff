@@ -2,14 +2,20 @@
 # service name and file location
 services:
   keystone:
+    enable: true
     pod_name: keystone
     path: /etc/keystone
     name:
       - keystone.conf
       - logging.conf
   glance:
+    enable: true
     pod_name: glance
     path: /etc/glance
     name:
       # @todo: pull all .conf files from a given directory
       - glance-api.conf
+  nova:
+    enable: true
+    pod_name: nova
+    path: /etc
