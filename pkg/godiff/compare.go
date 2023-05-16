@@ -44,7 +44,9 @@ func writeReport(content []string, reportPath string) error {
 	}
 	reportContent := strings.Join(content, "")
 	err := ioutil.WriteFile(reportPath, []byte(reportContent), 0644)
+	log.Info("Write diff file: ", reportPath)
 	if err != nil {
+		log.Error("Failed to write diff file in: ", reportPath)
 		return errors.New("Failed to write report file: '" + reportPath + "'. " + err.Error())
 	}
 	return nil
