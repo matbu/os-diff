@@ -30,7 +30,3 @@ crc: true
 # you want to pull only: /etc/keystone/keystone.conf
 # instead of the whole directory: /etc/keystone/
 pull_items: false
-
-# pod options
-# strict match for getting pod id in TripleO and podman context
-strict_pod_name_match: false

@@ -6,34 +6,70 @@ services:
     # Bool to enable/disable a service (not implemented yet)
     enable: true
     # Pod name, in both OCP and podman context.
-    # It could be strict match with strict_pod_name_match set to true
-    # or by default it will just grep the podman and work with all the pods
-    # which matched with pod_name.
+    # It could be strict match or will only just grep the podman_name
+    # and work with all the pods which matched with pod_name.
+    # To enable/disable use strict_pod_name_match: true/false
+    podman_name: keystone
     pod_name: keystone
+    # pod options
+    # strict match for getting pod id in TripleO and podman context
+    strict_pod_name_match: true
     # Path of the config files you want to analyze.
     # It could be whatever path you want:
     # /etc/<service_name> or /etc or /usr/share/<something> or even /
     # @TODO: need to implement loop over path to support multiple paths such as:
     # - /etc
     # - /usr/share
-    path: /etc/keystone
+    path:
+      - /etc/keystone
     # In podman context, when you want to pull specific files:
     # You need to set pull_items to true
+    # This is not working with the `path` list, the path needs to be a full path
+    # and the `path`key:value will be ignored.
     name:
-      - keystone.conf
-      - logging.conf
+      - /etc/keystone/keystone.conf
+      - /etc/keystone/logging.conf
   glance:
     enable: true
     pod_name: glance
-    path: /etc/glance
+    strict_pod_name_match: true
+    path:
+      - /etc/glance
     name:
-      # @todo: pull all .conf files from a given directory
-      - glance-api.conf
+      - /etc/glance/glance-api.conf
   nova:
     enable: true
     pod_name: nova
-    path: /etc
+    strict_pod_name_match: true
+    path:
+      - /etc/nova
   neutron:
     enable: true
     pod_name: neutron
-    path: /etc
+    strict_pod_name_match: true
+    path:
+      - /etc/neutron
+  neutron-openvswitch:
+    enable: true
+    pod_name: neutron-openvswitch
+    strict_pod_name_match: true
+    path: 
+      - /etc/neutron
+  neutron-l3:
+    enable: true
+    pod_name: neutron-l3
+    strict_pod_name_match: true
+    path: 
+      - /etc/neutron
+  mariadb:
+    enable: true
+    pod_name: mariadb
+    strict_pod_name_match: true
+    path:
+      - /etc
+  rabbitmq:
+    enable: true
+    pod_name: rabbitmq
+    strict_pod_name_match: true
+    path: 
+      - /etc
