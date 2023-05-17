@@ -3,7 +3,25 @@
   - name: Get oc binary path
     register: oc_result
     shell: |
+      eval $(crc oc-env)
       which oc
+    when: crc
+
+  - name: Set fact for oc binary
+    set_fact:
+      oc_bin: "{{ oc_result.stdout }}"
+    when: crc
+
+  - name: Get oc binary path
+    register: oc_result
+    shell: |
+      which oc
+    when: not crc
+
+  - name: Set fact for oc binary
+    set_fact:
+      oc_bin: "{{ oc_result.stdout }}"
+    when: not crc
 
   - name: Set fact for oc binary
     set_fact:
