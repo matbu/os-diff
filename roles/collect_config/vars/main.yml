@@ -1,10 +1,24 @@
 ---
 # service name and file location
 services:
+  # Service name
   keystone:
+    # Bool to enable/disable a service (not implemented yet)
     enable: true
+    # Pod name, in both OCP and podman context.
+    # It could be strict match with strict_pod_name_match set to true
+    # or by default it will just grep the podman and work with all the pods
+    # which matched with pod_name.
     pod_name: keystone
+    # Path of the config files you want to analyze.
+    # It could be whatever path you want:
+    # /etc/<service_name> or /etc or /usr/share/<something> or even /
+    # @TODO: need to implement loop over path to support multiple paths such as:
+    # - /etc
+    # - /usr/share
     path: /etc/keystone
+    # In podman context, when you want to pull specific files:
+    # You need to set pull_items to true
     name:
       - keystone.conf
       - logging.conf
@@ -18,4 +32,8 @@ services:
   nova:
     enable: true
     pod_name: nova
+    path: /etc
+  neutron:
+    enable: true
+    pod_name: neutron
     path: /etc

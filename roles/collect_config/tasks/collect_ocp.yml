@@ -11,7 +11,7 @@
 
   - name: Login to OC
     shell: |
-      {{ oc_bin }} login -u {{ oc_login }} -p {{ oc_passwd }} {{ oc_host }}
+      {{ oc_bin }} login -u {{ oc_login }} -p {{ oc_passwd }} {{ oc_host }}
 
   - name: Test login
     shell: |

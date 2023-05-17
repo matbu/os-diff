@@ -5,6 +5,14 @@
     register: results
     shell: |
       podman ps | grep Up | awk '/{{ service.key }}$/  {print $1}'
+    when: strict_pod_name_match
+
+  - name: Get container id {{ service.key }}
+    become: yes
+    register: results
+    shell: |
+      podman ps | grep Up | awk '/{{ service.key }}/  {print $1}'
+    when: strict_pod_name_match
 
   - name: Set fact for container id {{ service.key }}
     set_fact:

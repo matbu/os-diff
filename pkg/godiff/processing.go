@@ -41,7 +41,7 @@ type GoDiffDataStruct struct {
 }
 
 func init() {
-	file, err := os.OpenFile("compare.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	file, err := os.OpenFile("results.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {
 		log.Formatter = &logrus.TextFormatter{
 			FullTimestamp:          false,
