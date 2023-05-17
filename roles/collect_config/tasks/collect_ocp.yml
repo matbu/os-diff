@@ -57,3 +57,4 @@
       src: "{{ working_dir }}/{{ crc_collect_dir }}/{{ service_name }}"
       dest: "{{ local_working_dir }}"
       mode: pull
+      use_ssh_args: yes
