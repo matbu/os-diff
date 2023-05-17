@@ -27,3 +27,4 @@
     dest: "{{ local_working_dir }}/{{ crc_collect_dir }}"
     mode: pull
     use_ssh_args: yes
+  when: collect_ocp
