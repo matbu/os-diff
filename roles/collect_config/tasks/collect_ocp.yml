@@ -23,10 +23,6 @@
       oc_bin: "{{ oc_result.stdout }}"
     when: not crc
 
-  - name: Set fact for oc binary
-    set_fact:
-      oc_bin: "{{ oc_result.stdout }}"
-
   - name: Login to OC
     shell: |
       {{ oc_bin }} login -u {{ oc_login }} -p {{ oc_passwd }} {{ oc_host }}
