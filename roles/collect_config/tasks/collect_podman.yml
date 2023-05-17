@@ -50,10 +50,3 @@
     become: yes
     when: not pull_items
     loop: "{{ container_id }}"
-
-  - name: Fetch TripleO configs
-    synchronize:
-      src: "{{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}"
-      dest: "{{ local_working_dir }}"
-      mode: pull
-      use_ssh_args: yes

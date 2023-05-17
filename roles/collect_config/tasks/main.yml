@@ -12,3 +12,18 @@
     service: "{{ item }}"
   when: collect_ocp
   with_dict: "{{ services }}"
+
+- name: Fetch TripleO configs
+  synchronize:
+    src: "{{ working_dir }}/{{ tripleo_collect_dir }}"
+    dest: "{{ local_working_dir }}/"
+    mode: pull
+    use_ssh_args: yes
+  when: collect_podman
+
+- name: Fetch CRC configs
+  synchronize:
+    src: "{{ working_dir }}/{{ crc_collect_dir }}"
+    dest: "{{ local_working_dir }}/{{ crc_collect_dir }}"
+    mode: pull
+    use_ssh_args: yes

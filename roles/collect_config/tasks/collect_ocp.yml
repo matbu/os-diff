@@ -69,10 +69,3 @@
     shell: |
       {{ oc_bin }} cp {{ item }}:{{ config_path }}/ {{ working_dir }}/{{ crc_collect_dir }}/{{ service_name }}/{{ item }}/{{ config_path }}/
     loop: "{{ pod_id }}"
-
-  - name: Fetch CRC configs
-    synchronize:
-      src: "{{ working_dir }}/{{ crc_collect_dir }}/{{ service_name }}"
-      dest: "{{ local_working_dir }}"
-      mode: pull
-      use_ssh_args: yes
