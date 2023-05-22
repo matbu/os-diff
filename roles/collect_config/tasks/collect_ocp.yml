@@ -4,7 +4,6 @@
     register: results
     shell: |
       {{ oc_bin }} get pods --field-selector status.phase=Running | awk '/{{ service.value.pod_name }}-[a-f0-9-]/ {print $1}'
-    when: not service.value.strict_pod_name_match
 
   - name: Set fact for pod id
     set_fact:
@@ -16,7 +15,7 @@
   - name: Get pods id
     register: results
     shell: |
-      {{ oc_bin }} get pods --field-selector status.phase=Running | awk '/{{ service.value.pod_name }}-[a-f0-9-]/ {print $1}'
+      {{ oc_bin }} get pods --field-selector status.phase=Running | awk '/{{ service.value.pod_name }}/ {print $1}'
     when: service.value.strict_pod_name_match
 
   - name: Set fact for pod id
