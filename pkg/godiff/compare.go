@@ -294,7 +294,7 @@ func (f *CompareFileNames) CompareFiles() ([]string, error) {
 		// Check for differences
 		f.Compare(orgContent, destContent)
 	}
-	filePath := "/tmp/" + f.Origin + ".diff"
+	filePath := f.Origin + ".diff"
 	if len(f.DiffReport) != 0 {
 		err = writeReport(f.DiffReport, filePath)
 		if err != nil {
