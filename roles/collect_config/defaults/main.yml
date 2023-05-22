@@ -4,7 +4,7 @@
 # TripleO podman:
 tripleo_collect_dir: collect_tripleo_configs
 # OCP:
-crc_collect_dir: collect_crc_configs
+crc_collect_dir: collect_ocp_configs
 # Temporary remote directory where the artifacts will be copy before being synchronized on the local file system.
 # For example, the TripleO standalone podman config files will be stored under /tmp on the standalone host, then
 # the /tmp/collect_tripleo_configs will be copy on the local file system: /tmp/collect_tripleo_configs
