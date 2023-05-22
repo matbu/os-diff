@@ -32,3 +32,15 @@
     mode: pull
     use_ssh_args: yes
   when: collect_ocp
+
+- name: Cleanup TripleO
+  file:
+    path: "{{ working_dir }}/{{ tripleo_collect_dir }}"
+    state: absent
+  when: collect_podman
+
+- name: Cleanup OCP
+  file:
+    path: "{{ working_dir }}/{{ crc_collect_dir }}"
+    state: absent
+  when: collect_ocp

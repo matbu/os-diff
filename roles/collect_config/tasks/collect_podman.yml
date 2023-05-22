@@ -35,7 +35,7 @@
   - name: Fail if no {{ service_name }} container exists
     fail:
       msg: "No container for {{ service_name }} found."
-    when: not results.stdout_lines
+    when: not container_id
 
   - name: Set fact for {{ service_name }} path
     set_fact:

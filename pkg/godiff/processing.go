@@ -100,8 +100,6 @@ func filesEqual(file1, file2 string) (bool, error) {
 		log.Warn("Files: ", file1, " and: ", file2, " are differents.")
 		return false, nil
 	}
-
-	log.Info("Files: ", file1, " and: ", file2, " are equals.")
 	return true, nil
 }
 
@@ -175,22 +173,33 @@ func (p *GoDiffDataStruct) Process(dir1 string, dir2 string) error {
 		relPath, _ := filepath.Rel(dir1, path)
 		path2 := filepath.Join(dir2, relPath)
 		file1, err := os.Stat(path)
+		if err != nil {
+			fmt.Errorf("Error in: %s, %s", path, err)
+			return nil
+		}
 		file2, err := os.Stat(path2)
 		if err != nil {
 			if !stringInSlice(path, p.missingPath) {
-				log.Info("File is missing: ", path, "\n")
-				p.missingPath = append(p.missingPath, path)
+				if file1.IsDir() {
+					log.Info("Directory is missing: ", path, "\n")
+					p.missingPath = append(p.missingPath, path)
+					// Skip this dir if the current path is missing, no need to walk through all subdir
+					return filepath.SkipDir
+				} else {
+					log.Warn("File is missing: ", path, "\n")
+					p.missingPath = append(p.missingPath, path)
+				}
 			}
 		} else {
 			if file1.IsDir() && !file2.IsDir() {
 				if !stringInSlice(path, p.wrongTypeInOrg) {
-					log.Info("File: ", path, "and: ", path2, " have different type (directory vs file)")
+					log.Warn("File: ", path, "and: ", path2, " have different type (directory vs file)")
 					p.wrongTypeInOrg = append(p.wrongTypeInOrg, path)
 				}
 			}
 			if !file1.IsDir() && file2.IsDir() {
 				if !stringInSlice(path, p.wrongTypeInDest) {
-					log.Info("File: ", path, "and: ", path2, " have different type (directory vs file)")
+					log.Warn("File: ", path, "and: ", path2, " have different type (directory vs file)")
 					p.wrongTypeInDest = append(p.wrongTypeInDest, path2)
 				}
 			}
