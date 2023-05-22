@@ -126,12 +126,18 @@ Run the compare command:
 
 ```
 
+### Asciinema demo
+
+https://asciinema.org/a/5YnpA5t7uZKn2H2jU5LSNHNQx
+
+
 ### TODO
 
 * Add option to compare the config files directly from files to pods
 * Improve reporting (console, debug and log file with general report)
 * Improve diff output for json and yaml
-* Implement loop over path to support multiple paths in Ansible collect_config role, such as:
-  - /etc
-  - /usr/share
-* Improve Makefile entry with for example: make compare 
+* Improve Makefile entry with for example: make compare
+* Add a skip list (skip /etc/keystone/fernet-keys )
+* Add interactive and edit mode to ask for editing the config for the user
+  when a difference has been found
+
