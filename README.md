@@ -128,8 +128,7 @@ Run the compare command:
 
 ### Asciinema demo
 
-https://asciinema.org/a/5YnpA5t7uZKn2H2jU5LSNHNQx
-
+https://asciinema.org/a/JCgHLNHYC5DRVibJQK2YbCTSf
 
 ### TODO
 

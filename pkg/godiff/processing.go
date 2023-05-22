@@ -23,6 +23,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
@@ -248,10 +249,18 @@ func (p *GoDiffDataStruct) ProcessDirectories(reverse bool) error {
 	if reverse {
 		p.Process(p.Destination, p.Origin)
 	}
-	fmt.Printf("\n*** Report ****\n")
-	fmt.Printf("Missing files: %s \n", p.missingPath)
-	fmt.Printf("Files with differences: %s \n", p.unmatchFile)
-	fmt.Printf("Different file type in origin: %s \n", p.wrongTypeInOrg)
-
+	fmt.Printf("\n**** Report ****\n")
+	if len(p.missingPath) > 0 {
+		fmt.Printf("\n**** Missing files or directories ****\n")
+		fmt.Println(strings.Join(p.missingPath, "\n"))
+	}
+	if len(p.unmatchFile) > 0 {
+		fmt.Printf("\n**** Files with differences ****\n")
+		fmt.Println(strings.Join(p.unmatchFile, "\n"))
+	}
+	if len(p.wrongTypeInOrg) > 0 {
+		fmt.Printf("\n**** Different file type in origin ****\n")
+		fmt.Println(strings.Join(p.wrongTypeInOrg, "\n"))
+	}
 	return nil
 }
