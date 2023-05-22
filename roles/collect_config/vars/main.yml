@@ -33,7 +33,7 @@ services:
     enable: true
     podman_name: glance
     pod_name: glance
-    strict_pod_name_match: true
+    strict_pod_name_match: false
     path:
       - /etc/glance
     file_name:
@@ -41,41 +41,41 @@ services:
   nova:
     enable: true
     pod_name: nova
-    strict_pod_name_match: true
+    strict_pod_name_match: false
     path:
       - /etc/nova
   neutron:
     enable: true
     podman_name: neutron
     pod_name: neutron
-    strict_pod_name_match: true
+    strict_pod_name_match: false
     path:
       - /etc/neutron
   neutron-openvswitch:
     enable: true
     podman_name: neutron-openvswitch
     pod_name: neutron-openvswitch
-    strict_pod_name_match: true
+    strict_pod_name_match: false
     path: 
       - /etc/neutron
   neutron-l3:
     enable: true
     podman_name: neutron-l3
     pod_name: neutron-l3
-    strict_pod_name_match: true
+    strict_pod_name_match: false
     path: 
       - /etc/neutron
   mariadb:
     enable: true
     podman_name: mariadb
     pod_name: mariadb
-    strict_pod_name_match: true
+    strict_pod_name_match: false
     path:
       - /etc
   rabbitmq:
     enable: true
     podman_name: rabbitmq
     pod_name: rabbitmq
-    strict_pod_name_match: true
+    strict_pod_name_match: false
     path: 
       - /etc

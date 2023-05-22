@@ -39,10 +39,16 @@
   - name: Set fact for pod id
     set_fact:
       pod_id: "{{ results.stdout_lines[0] }}"
+    when: results.stdout_lines
 
   - name: Set fact for service name
     set_fact:
       service_name: "{{ service.key }}"
+
+  - name: Fail if no {{ service_name }} container exists
+    fail:
+      msg: "No container for {{ service_name }} found."
+    when: not results.stdout_lines
 
   - name: Set fact for {{ service_name }} path
     set_fact:
@@ -69,4 +75,8 @@
     loop: "{{ config_path }}"
     loop_control:
       loop_var: config_path_item
+  rescue:
+    - name: Fail to pull config for {{ service_name }}
+      debug:
+        msg: "Fail to pull {{ service_name }} config..."
   when: service.value.enable
