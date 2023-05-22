@@ -67,6 +67,6 @@
     shell: |
       {{ oc_bin }} cp {{ pod_id }}:{{ config_path_item }}/ {{ working_dir }}/{{ crc_collect_dir }}/{{ service_name }}/{{ config_path_item }}/
     loop: "{{ config_path }}"
-     loop_control:
+    loop_control:
       loop_var: config_path_item
   when: service.value.enable
