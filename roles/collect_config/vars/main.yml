@@ -68,8 +68,8 @@ services:
   mariadb:
     enable: true
     podman_name: mariadb
-    pod_name: mariadb
-    strict_pod_name_match: false
+    pod_name: mariadb-openstack
+    strict_pod_name_match: true
     path:
       - /etc
   rabbitmq:
@@ -78,4 +78,4 @@ services:
     pod_name: rabbitmq
     strict_pod_name_match: false
     path: 
-      - /etc
+      - /etc/rabbitmq
