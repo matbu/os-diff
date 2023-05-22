@@ -6,8 +6,8 @@
   when: collect_podman
   with_dict: "{{ services }}"
 
-- name: oc login
-  include_tasks: oc_login.yml
+- name: OC login
+  include_tasks: ocp_login.yml
   when: collect_ocp
 
 - name: Collect ocp
