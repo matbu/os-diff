@@ -71,7 +71,8 @@ services:
     pod_name: mariadb-openstack
     strict_pod_name_match: true
     path:
-      - /etc
+      - /etc/my.cnf
+      - /etc/my.cnf.d
   rabbitmq:
     enable: true
     podman_name: rabbitmq
