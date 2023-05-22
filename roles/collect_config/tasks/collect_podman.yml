@@ -32,27 +32,38 @@
     set_fact:
       config_path: "{{ service.value.path }}"
 
+  - name: Set fact for {{ service_name }} config file path for pulling files by files
+    set_fact:
+      config_file_path: "{{ service.value.file_name | default([]) }}"
+
   - name: Create {{ service_name }} directory
     become: true
     file:
-      path: "{{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}/{{ item | regex_replace('/$','') | dirname }}"
+      path: "{{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}/{{ config_path_item | regex_replace('/$','') | dirname }}"
       state: directory
       mode: "0755"
       owner: "{{ ansible_user_id }}"
       group: "{{ ansible_user_id }}"
       recurse: true
     loop: "{{ config_path }}"
+    loop_control:
+      loop_var: config_path_item
 
-  - name: Pull configuration files from podman container {{ service.key }} - per items
+  - name: Pull configuration files from podman container {{ service_name }} - per items
     ignore_errors: yes
-    command: podman cp {{ container_id }}:{{ item }} {{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}/{{ item }}
+    command: podman cp {{ container_id }}:{{ config_file_path_item }} {{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}/{{ config_file_path_item }}
     become: yes
     when: pull_items
-    loop: "{{ service.value.name }}"
+    loop: "{{ config_file_path }}"
+    loop_control:
+      loop_var: config_file_path_item
 
   - name: Pull configuration files from podman container {{ service_name }} - all
     ignore_errors: yes
-    command: podman cp {{ container_id }}:{{ item }} {{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}/{{ item | regex_replace('/$','') | dirname }}
+    command: podman cp {{ container_id }}:{{ config_path_item }} {{ working_dir }}/{{ tripleo_collect_dir }}/{{ service_name }}/{{ config_path_item | regex_replace('/$','') | dirname }}
     become: yes
     when: not pull_items
     loop: "{{ config_path }}"
+    loop_control:
+      loop_var: config_path_item
+  when: service.value.enable

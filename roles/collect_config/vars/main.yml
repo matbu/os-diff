@@ -26,7 +26,7 @@ services:
     # You need to set pull_items to true
     # This is not working with the `path` list, the path needs to be a full path
     # and the `path`key:value will be ignored.
-    name:
+    file_name:
       - /etc/keystone/keystone.conf
       - /etc/keystone/logging.conf
   glance:
@@ -36,7 +36,7 @@ services:
     strict_pod_name_match: true
     path:
       - /etc/glance
-    name:
+    file_name:
       - /etc/glance/glance-api.conf
   nova:
     enable: true
