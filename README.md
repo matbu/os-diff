@@ -107,7 +107,7 @@ your two source directories.
 A results file is written at the root of this project `results.log` and a *.diff file is created for each
 file where a difference has been detected
 
-```
+```diff
 /tmp/collect_crc_configs/nova/nova-api-0/etc/nova/nova.conf.diff
 
 # with this kind of content:
