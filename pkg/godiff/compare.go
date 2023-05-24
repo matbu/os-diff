@@ -340,16 +340,21 @@ func (f *CompareFileNames) DiffFiles() error {
 		log.Error("Failed to read file", f.Origin, "\n")
 		return errors.New("Failed to open file: '" + f.Destination + "'. " + err.Error())
 	}
-	f.Compare(orgContent, destContent)
+	if isIni(orgContent) && isIni(destContent) {
+		f.CompareIniFiles(f.Origin, f.Destination)
+	} else {
+		f.Compare(orgContent, destContent)
+	}
 
 	var output []string
+	f.DiffReport = strings.Split(strings.Join(f.DiffReport, ""), "\n")
 	for _, line := range f.DiffReport {
 		if strings.HasPrefix(line, "+") {
-			output = append(output, fmt.Sprintf("%s%s%s", Green, line, Reset))
+			output = append(output, fmt.Sprintf("%s%s%s\n", Green, line, Reset))
 		} else if strings.HasPrefix(line, "-") {
-			output = append(output, fmt.Sprintf("%s%s%s", Red, line, Reset))
+			output = append(output, fmt.Sprintf("%s%s%s\n", Red, line, Reset))
 		} else {
-			output = append(output, fmt.Sprintf("%s", line))
+			output = append(output, fmt.Sprintf("%s\n", line))
 		}
 	}
 	fmt.Println(strings.Join(output, ""))

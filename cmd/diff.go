@@ -45,7 +45,7 @@ os-diff diff --origin=tests/podman/keystone.conf --destination=tests/ocp/keyston
 }
 
 func init() {
-	diffCmd.Flags().StringVarP(&source, "source", "s", "", "Source file.")
+	diffCmd.Flags().StringVarP(&source, "origin", "o", "", "Source file.")
 	diffCmd.Flags().StringVarP(&dest, "destination", "d", "", "Destination file.")
 	rootCmd.AddCommand(diffCmd)
 }
