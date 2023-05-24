@@ -46,9 +46,9 @@ var compareCmd = &cobra.Command{
 }
 
 func init() {
-	compareCmd.Flags().StringVar(&origin, "origin", "", "Origin file or directory.")
-	compareCmd.Flags().StringVar(&destination, "destination", "", "Destination file or directory")
+	compareCmd.Flags().StringVarP(&origin, "origin", "o", "", "Origin file or directory.")
+	compareCmd.Flags().StringVarP(&destination, "destination", "d", "", "Destination file or directory")
 	compareCmd.Flags().StringVar(&output, "output", "output.txt", "Output file (default is $PWD/output.txt)")
-	pullCmd.Flags().BoolVar(&reverse, "reverse", false, "Search difference in both directories: origin and destination.")
+	compareCmd.Flags().BoolVar(&reverse, "reverse", false, "Search difference in both directories: origin and destination.")
 	rootCmd.AddCommand(compareCmd)
 }

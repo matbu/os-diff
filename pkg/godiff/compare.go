@@ -30,6 +30,10 @@ import (
 	"github.com/go-yaml/yaml"
 )
 
+var Reset = "\033[0m"
+var Red = "\033[31m"
+var Green = "\033[32m"
+
 type CompareFileNames struct {
 	Origin      string
 	Destination string
@@ -61,7 +65,7 @@ func (f *CompareFileNames) Compare(origin []byte, destination []byte) error {
 	found := false
 	diffFound := false
 	msg := string("")
-	for _, line1 := range file1 {
+	for i, line1 := range file1 {
 		found = false
 		// Skip comments
 		if !strings.HasPrefix(line1, "#") && len(line1) > 0 {
@@ -74,14 +78,20 @@ func (f *CompareFileNames) Compare(origin []byte, destination []byte) error {
 				}
 			}
 			if !found {
-				log.Warn("Line: ", line1, "not found in: ", f.Destination)
+				log.Warn("Line: ", line1, " not found in: ", f.Destination, " line: ", i)
+				msg = fmt.Sprintf("@@ line: %d\n", i)
+				if !stringInSlice(msg, f.DiffReport) {
+					f.DiffReport = append(f.DiffReport, msg)
+				}
 				msg = fmt.Sprintf("+%s\n", line1)
 				f.DiffReport = append(f.DiffReport, msg)
 				diffFound = true
 			}
 		}
 	}
-	for _, line2 := range file2 {
+	//var lineNb []string
+	var index int
+	for i, line2 := range file2 {
 		found = false
 		// Skip comments
 		if !strings.HasPrefix(line2, "#") && len(line2) > 0 {
@@ -94,9 +104,18 @@ func (f *CompareFileNames) Compare(origin []byte, destination []byte) error {
 				}
 			}
 			if !found {
-				log.Warn("Line: ", line2, "not found in: ", f.Origin)
-				msg = fmt.Sprintf("-%s\n", line2)
-				f.DiffReport = append(f.DiffReport, msg)
+				log.Warn("Line: ", line2, " not found in: ", f.Origin, " line: ", i)
+				msg = fmt.Sprintf("@@ line: %d\n", i)
+				if !stringInSlice(msg, f.DiffReport) {
+					f.DiffReport = append(f.DiffReport, msg)
+					msg = fmt.Sprintf("-%s\n", line2)
+					f.DiffReport = append(f.DiffReport, msg)
+				} else {
+					index = sliceIndex(msg, f.DiffReport)
+					//lineNb = strings.Split(f.DiffReport[index], " ")
+					msg = fmt.Sprintf("-%s\n", line2)
+					f.DiffReport = append(f.DiffReport[:index+2], msg)
+				}
 				diffFound = true
 			}
 		}
@@ -148,6 +167,8 @@ func (f *CompareFileNames) CompareYamlFiles(origin []byte, dest []byte) error {
 				// data1, _ := yaml.Marshal(&val1)
 				// data2, _ := yaml.Marshal(&val2)
 				// msg = fmt.Sprintf("+%v: %s\n-%v:%s\n", key, data1, key, data2)
+				data, _ := yaml.Marshal(&map1)
+				ioutil.WriteFile("/tmp/test.yaml", data, 0644)
 				msg = fmt.Sprintf("+%v: %s\n-%v:%s\n", key, val1, key, val2)
 				f.DiffReport = append(f.DiffReport, msg)
 			}
@@ -288,7 +309,7 @@ func (f *CompareFileNames) CompareFiles() ([]string, error) {
 		f.CompareJsonFiles(orgContent, destContent)
 	} else if isYaml(orgContent) && isYaml(destContent) {
 		log.Info("Files detected as YAML files, start to process contents")
-		f.CompareYamlFiles(orgContent, destContent)
+		f.Compare(orgContent, destContent)
 	} else {
 		log.Info("No specific type detected, process to a standard line by line comparison...")
 		// Check for differences
@@ -303,4 +324,34 @@ func (f *CompareFileNames) CompareFiles() ([]string, error) {
 		}
 	}
 	return f.DiffReport, nil
+}
+
+func (f *CompareFileNames) DiffFiles() error {
+	// Drop logging
+	log.SetOutput(ioutil.Discard)
+	// Read the files
+	orgContent, err := ioutil.ReadFile(f.Origin)
+	if err != nil {
+		log.Error("Failed to read file", f.Origin, "\n")
+		return errors.New("Failed to open file: '" + f.Origin + "'. " + err.Error())
+	}
+	destContent, err := ioutil.ReadFile(f.Destination)
+	if err != nil {
+		log.Error("Failed to read file", f.Origin, "\n")
+		return errors.New("Failed to open file: '" + f.Destination + "'. " + err.Error())
+	}
+	f.Compare(orgContent, destContent)
+
+	var output []string
+	for _, line := range f.DiffReport {
+		if strings.HasPrefix(line, "+") {
+			output = append(output, fmt.Sprintf("%s%s%s", Green, line, Reset))
+		} else if strings.HasPrefix(line, "-") {
+			output = append(output, fmt.Sprintf("%s%s%s", Red, line, Reset))
+		} else {
+			output = append(output, fmt.Sprintf("%s", line))
+		}
+	}
+	fmt.Println(strings.Join(output, ""))
+	return nil
 }

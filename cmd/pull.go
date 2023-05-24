@@ -65,8 +65,8 @@ var pullCmd = &cobra.Command{
 }
 
 func init() {
-	pullCmd.Flags().StringVar(&inventory, "inventory", "hosts", "Ansible inventory hosts file.")
-	pullCmd.Flags().StringVar(&cloud_engine, "cloud_engine", "ocp", "Service engine, could be: ocp or podman.")
+	pullCmd.Flags().StringVarP(&inventory, "inventory", "i", "hosts", "Ansible inventory hosts file.")
+	pullCmd.Flags().StringVarP(&cloud_engine, "cloud_engine", "c", "ocp", "Service engine, could be: ocp or podman.")
 	pullCmd.Flags().StringVar(&output_dir, "output_dir", "/tmp", "Output directory for the configuration files.")
 	pullCmd.Flags().BoolVar(&verbose, "verbose", false, "Enable Ansible verbosity.")
 	rootCmd.AddCommand(pullCmd)

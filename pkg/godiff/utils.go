@@ -33,6 +33,15 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
+func sliceIndex(element string, data []string) int {
+	for k, v := range data {
+		if element == v {
+			return k
+		}
+	}
+	return -1
+}
+
 func isIni(data []byte) bool {
 	if data[0] == '[' {
 		return true
