@@ -126,6 +126,51 @@ Run the compare command:
 
 ```
 
+### Examples:
+
+diff command compare file to file only and ouput a diff with color on the console.
+Example for Yaml file:
+
+```diff
+./os-diff diff -o tests/podman/key.yaml -d tests/ocp/key.yaml
+Source file path: tests/podman/key.yaml, difference with: tests/ocp/key.yaml
+@@ line: 8
++    pod_name: foo
+@@ line: 2
+-    pod_name: keystone
+```
+
+Example for ini config file:
+
+```diff
+ ./os-diff diff -o /tmp/collect_ocp_configs/keystone/etc/keystone/keystone.conf -d /tmp/collect_tripleo_configs/keystone/etc/keystone/keystone.conf
+Source file path: /tmp/collect_ocp_configs/keystone/etc/keystone/keystone.conf, difference with: /tmp/collect_tripleo_configs/keystone/etc/keystone/keystone.conf
+[DEFAULT]
+-use_stderr=true
+-notification_format=basic
+-debug=True
+-transport_url=rabbit://guest:xM2nhUiV60xoEPTjoxNJ5vFWC@undercloud-0.ctlplane.redhat.local:5672/?ssl=0
+[cache]
+-backend=dogpile.cache.memcached
+-enabled=True
+-memcache_servers=undercloud-0.ctlplane.redhat.local:11211
+-tls_enabled=False
+[catalog]
+-driver=sql
+[cors]
+-allowed_origin=*
+[credential]
+-key_repository=/etc/keystone/credential-keys
+[database]
++connection=mysql+pymysql://keystone:12345678@openstack/keystone
+-connection=mysql+pymysql://keystone:xxx@192.168.24.3/keystone?read_default_file=/etc/my.cnf.d/tripleo.cnf&read_default_group=tripleo
+[fernet_tokens]
++max_active_keys=2
+-max_active_keys=5
+```
+
+
+
 ### Asciinema demo
 
 https://asciinema.org/a/JCgHLNHYC5DRVibJQK2YbCTSf
