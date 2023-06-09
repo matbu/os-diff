@@ -13,7 +13,7 @@ services:
     pod_name: keystone
     # pod options
     # strict match for getting pod id in TripleO and podman context
-    strict_pod_name_match: true
+    strict_pod_name_match: false
     # Path of the config files you want to analyze.
     # It could be whatever path you want:
     # /etc/<service_name> or /etc or /usr/share/<something> or even /

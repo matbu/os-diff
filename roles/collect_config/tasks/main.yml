@@ -37,10 +37,13 @@
   file:
     path: "{{ working_dir }}/{{ tripleo_collect_dir }}"
     state: absent
-  when: collect_podman
+  when:
+    - collect_podman
 
 - name: Cleanup OCP
   file:
     path: "{{ working_dir }}/{{ crc_collect_dir }}"
     state: absent
-  when: collect_ocp
+  when:
+    - collect_ocp
+    - ansible_connection != "local"

@@ -1,7 +1,7 @@
 ocp:
   hosts:
     crc:
-      ansible_connection: ssh
+      ansible_connection: local
 
 undercloud:
   hosts:
